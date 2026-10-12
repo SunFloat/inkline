@@ -1,6 +1,9 @@
 {
   "name": "inkline",
-  "owner": { "name": "Benjamin Buchta" },
+  "description": "inkline: turn a prompt, photo or SVG into a hand-drawn video, rendered locally.",
+  "owner": {
+    "name": "Benjamin Buchta"
+  },
   "plugins": [
     {
       "name": "inkline",
