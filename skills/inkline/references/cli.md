@@ -14,7 +14,8 @@ stdout, progress silenced) and `--quiet`.
 | `trace <input>` | saves the stroke plan as `.inkline.json` (reuse with any command) | `output, strokes, contour, detail, shade, width, height, color` |
 | `styles` | lists presets and user styles | array with `--json` |
 | `style <name> --from <base> …` | saves a custom style | `saved, extends, use` |
-| `doctor` | checks Node, Chrome, ffmpeg; downloads headless Chrome if needed | `node, chrome, ffmpeg, status` |
+| `doctor` | reports Node, engine packages, Chrome and ffmpeg; changes nothing | `node, engine, chrome, ffmpeg, status, setup?` |
+| `setup [--with-chrome]` | installs the engine packages (~80 MB); `--with-chrome` also downloads headless Chrome (~90 MB) | same as `doctor` |
 
 Inputs: `.png .jpg .jpeg .webp .gif .bmp .avif`, `.svg`, `.inkline.json`, or an `http(s)` URL.
 
@@ -49,9 +50,9 @@ frames; parallel workers render disjoint frame ranges and are stitched losslessl
 | Symptom | Fix |
 |---|---|
 | `node: command not found` | Install Node.js 18+ (LTS) from nodejs.org, then rerun. |
-| First run seems stuck | It is installing dependencies (one time). `doctor` shows progress. |
-| `Could not find Chrome` / launch fails | `inkline doctor` downloads headless Chrome; or set `INKLINE_CHROME=/path/to/chrome`. |
-| `ffmpeg … failed` | Set `INKLINE_FFMPEG=/path/to/ffmpeg` or reinstall: delete `engine/node_modules`, rerun. |
+| `setup required` / exit code 3 | The engine is not installed. `inkline doctor` lists what `inkline setup` would install; run it once you agree. |
+| `No Chrome … found` | Install Chrome/Edge/Chromium, set `INKLINE_CHROME=/path/to/chrome`, or run `inkline setup --with-chrome`. |
+| `ffmpeg … failed` | Set `INKLINE_FFMPEG=/path/to/ffmpeg`, or delete `engine/node_modules` and run `inkline setup` again. |
 | `Nothing to draw` | The image is nearly flat. Use a higher-contrast photo, `--detail 0.9`, or crop to the subject. |
 | HEIC not supported | macOS: `sips -s format jpeg in.heic --out in.jpg`; elsewhere any converter. |
 | Muddy, too dark | `--density 0.35`, `--hatch hatch`, or a lighter style (`watercolor`). |

@@ -35,27 +35,47 @@ function findSystemChrome() {
   });
 }
 
-/** Downloads chrome-headless-shell once into ~/.cache/inkline when no browser is installed. */
-async function ensureBundledChrome(log) {
+function hasModule(name) {
+  try {
+    require.resolve(name);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/** A previously downloaded chrome-headless-shell in ~/.cache/inkline, if any. Never downloads. */
+async function findCachedChrome() {
+  if (!hasModule('@puppeteer/browsers')) return null;
+  const browsers = require('@puppeteer/browsers');
+  const installed = await browsers.getInstalledBrowsers({ cacheDir: CACHE });
+  const hit = installed.find((b) => b.browser === browsers.Browser.CHROMEHEADLESSSHELL);
+  return hit ? hit.executablePath : null;
+}
+
+/** Downloads chrome-headless-shell into ~/.cache/inkline. Only `inkline setup --with-chrome` calls this. */
+async function downloadChrome(log) {
   const browsers = require('@puppeteer/browsers');
   const platform = browsers.detectBrowserPlatform();
   const browser = browsers.Browser.CHROMEHEADLESSSHELL;
-  const installed = await browsers.getInstalledBrowsers({ cacheDir: CACHE });
-  const hit = installed.find((b) => b.browser === browser);
-  if (hit) return hit.executablePath;
   const buildId = await browsers.resolveBuildId(browser, platform, 'stable');
-  log && log(`downloading headless Chrome ${buildId} (one time, ~90 MB) …`);
+  log && log(`downloading headless Chrome ${buildId} (~90 MB) into ${CACHE} …`);
   const res = await browsers.install({ browser, buildId, cacheDir: CACHE, platform });
   return res.executablePath;
 }
 
-async function resolveChrome(log) {
-  return findSystemChrome() || (await ensureBundledChrome(log));
+async function resolveChrome() {
+  const found = findSystemChrome() || (await findCachedChrome());
+  if (found) return found;
+  throw new Error(
+    'No Chrome, Edge, Chromium or Brave found. Install one, set INKLINE_CHROME=/path/to/chrome, ' +
+      'or run `inkline setup --with-chrome` to download headless Chrome (~90 MB) into ~/.cache/inkline.'
+  );
 }
 
 async function launch(log) {
   const puppeteer = require('puppeteer-core');
-  const executablePath = await resolveChrome(log);
+  const executablePath = await resolveChrome();
   const browser = await puppeteer.launch({
     executablePath,
     headless: true,
@@ -87,4 +107,4 @@ async function openComposition(browser, width, height) {
   return page;
 }
 
-module.exports = { launch, resolveChrome, findSystemChrome, openComposition, CACHE };
+module.exports = { launch, resolveChrome, findSystemChrome, findCachedChrome, downloadChrome, hasModule, openComposition, CACHE };

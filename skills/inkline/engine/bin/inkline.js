@@ -16,7 +16,9 @@ Usage
   inkline trace   <input> [-o file]      save the stroke plan as .inkline.json for reuse
   inkline styles  [--json]               list presets and your own styles
   inkline style   <name> [--from base] [style flags] [--global]   save a custom style
-  inkline doctor                         check Chrome + ffmpeg, install what is missing
+  inkline doctor                         show what is installed (changes nothing)
+  inkline setup [--with-chrome]          install the render engine (3 npm packages, ~80 MB);
+                                         --with-chrome also downloads headless Chrome (~90 MB)
 
 Output
   -o, --out <file>        output path (default ./inkline-out/<name>-<style>.mp4)
@@ -92,6 +94,7 @@ const OPTIONS = {
   medium: { type: 'string' },
   glow: { type: 'string' },
   global: { type: 'boolean' },
+  'with-chrome': { type: 'boolean' },
   'save-project': { type: 'boolean' },
   'no-open': { type: 'boolean' },
   json: { type: 'boolean' },
@@ -233,6 +236,11 @@ async function main() {
     case 'doctor': {
       const { doctor } = require('../src/doctor');
       return print(await doctor(), v.json);
+    }
+    case 'setup': {
+      // the launcher has already run npm install; this step only fetches Chrome when asked to
+      const { setup } = require('../src/doctor');
+      return print(await setup({ withChrome: v['with-chrome'] }), v.json);
     }
     default:
       fail(`Unknown command "${cmd}". Run \`inkline --help\`.`);

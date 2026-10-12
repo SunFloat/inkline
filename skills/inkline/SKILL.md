@@ -19,22 +19,33 @@ which order, at which length and aspect, and whether the result is good enough t
 
 Reply in the user's language. Everything below is written for you, not for them.
 
-## 0. Runtime
+## 0. Runtime and consent
 
 All commands run through the launcher next to this file:
 
 ```bash
 INKLINE="<this skill's directory>/scripts/inkline"
-"$INKLINE" doctor        # first run installs dependencies (~1 min), then checks Chrome + ffmpeg
+"$INKLINE" doctor --json      # reports what is installed; changes nothing
 ```
 
-- The first call of any command installs the engine's npm dependencies by itself. Tell the user
-  once that a one-time setup is running; do not ask permission for it.
-- Chrome: the user's installed Chrome/Edge/Chromium is used. If none exists, `doctor` downloads
-  headless Chrome (~90 MB) into `~/.cache/inkline`.
-- ffmpeg ships with the engine. Node 18+ is the only prerequisite. If `node` is missing, tell the
-  user to install Node.js LTS and stop.
-- Every command accepts `--json` and prints one JSON line on success. Use it.
+inkline never installs anything on its own. Before the first render, run `doctor`:
+
+- `status: ready` → go on.
+- `status: setup required` → the render engine (npm packages `puppeteer-core`, `@puppeteer/browsers`,
+  `ffmpeg-static`, about 80 MB including an ffmpeg binary, from the npm registry, into the skill's
+  `engine/node_modules`) is missing. Tell the user exactly that, in one or two sentences, and ask
+  for permission with the structured question tool. Only after a clear yes run `"$INKLINE" setup --json`.
+  If they decline, stop and explain that nothing can be rendered without it; they can run
+  `inkline setup` themselves later.
+- `chrome: not found` → ask whether to use a browser they install themselves, point `INKLINE_CHROME`
+  at one, or download headless Chrome (~90 MB into `~/.cache/inkline`). Only after a yes run
+  `"$INKLINE" setup --with-chrome --json`.
+- Node is the one prerequisite inkline cannot provide. If `node` is missing or older than 18, tell
+  the user to install Node.js LTS and stop.
+
+Ask once per machine: when `doctor` says `ready`, never mention setup again. A render command that
+exits with code 3 means setup is missing; go back to this section instead of retrying.
+Every command accepts `--json` and prints one JSON line on success. Use it.
 
 ## 1. Decide: fast path or question round
 

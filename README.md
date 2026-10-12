@@ -38,8 +38,11 @@ git clone https://github.com/SunFloat/inkline
 cp -r inkline/skills/inkline ~/.claude/skills/
 ```
 
-Requirements: Node.js 18+. inkline uses the Chrome you already have (or fetches a headless one) and ships
-its own ffmpeg. The first run sets everything up by itself.
+Requirements: Node.js 18+ and a Chromium browser (Chrome, Edge, Chromium or Brave).
+
+inkline installs nothing behind your back. Before the first video, Claude tells you what the render engine
+needs (three npm packages, about 80 MB including ffmpeg) and runs `inkline setup` only after you agree.
+Without a browser it can also download headless Chrome, again only when you say so.
 
 ## Use it
 
@@ -146,7 +149,8 @@ $SKILL/scripts/inkline render photo.jpg --style charcoal --format 4:5 --duration
 $SKILL/scripts/inkline sheet photo.jpg --styles graphite,charcoal,ballpoint,neon   # compare looks
 $SKILL/scripts/inkline preview drawing.svg --style whiteboard                      # scrub in the browser
 $SKILL/scripts/inkline style brand --from fineliner --ink "#1f4fd8"                # save a style
-$SKILL/scripts/inkline doctor                                                       # check the setup
+$SKILL/scripts/inkline doctor                                                       # what is installed
+$SKILL/scripts/inkline setup                                                        # install the engine (~80 MB, only when you run it)
 ```
 
 All commands and flags: [`references/cli.md`](skills/inkline/references/cli.md).
