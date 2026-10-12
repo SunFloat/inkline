@@ -4,7 +4,7 @@
 
 # inkline
 
-**Prompt in. Hand-drawn video out.**
+**Prompt in. Hand-drawn video out.** · [Live demo](https://sunfloat.github.io/inkline/site/)
 
 A Claude skill that turns a sentence, a photo or an SVG into a video of it being drawn:
 stroke by stroke, pencil in frame, then a colour wash and the sound of graphite on paper.
