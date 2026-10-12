@@ -4,7 +4,14 @@ const fs = require('fs');
 const path = require('path');
 const { parseArgs } = require('util');
 
-const VERSION = require('../package.json').version;
+// the skill's release version; the engine package keeps its own version, bumped only when its dependencies change
+const VERSION = (() => {
+  try {
+    return fs.readFileSync(path.join(__dirname, '..', '..', 'VERSION'), 'utf8').trim();
+  } catch {
+    return require('../package.json').version;
+  }
+})();
 
 const HELP = `inkline ${VERSION} — turn a prompt, photo or SVG into a hand-drawn video
 

@@ -1,0 +1,5 @@
+{
+  "name": "inkline",
+  "version": "1.1.0",
+  "description": "Turn a prompt, photo or SVG into a hand-drawn video: pencil, pen, marker, chalk or neon drawings that appear stroke by stroke, rendered locally from HTML/JS."
+}

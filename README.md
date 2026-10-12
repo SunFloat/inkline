@@ -38,11 +38,17 @@ git clone https://github.com/SunFloat/inkline
 cp -r inkline/skills/inkline ~/.claude/skills/
 ```
 
+**Codex, Cursor, Gemini CLI** — the repository also carries their plugin manifests
+(`.codex-plugin/`, `.cursor-plugin/`, `gemini-extension.json`), so it installs the way your agent
+installs plugins or extensions from a GitHub repository.
+
 Requirements: Node.js 18+ and a Chromium browser (Chrome, Edge, Chromium or Brave).
 
 inkline installs nothing behind your back. Before the first video, Claude tells you what the render engine
 needs (three npm packages, about 80 MB including ffmpeg) and runs `inkline setup` only after you agree.
-Without a browser it can also download headless Chrome, again only when you say so.
+Without a browser it can also download headless Chrome, again only when you say so. The engine lives in
+Claude Code's plugin data folder (or `~/.cache/inkline`), so plugin updates don't wipe it and uninstalling
+the plugin removes it.
 
 ## Use it
 
@@ -168,7 +174,9 @@ skills/inkline/
     styles/                the eleven presets
     test/                  unit and end-to-end tests  (npm test)
 examples/                  SVGs written for inkline
+evals/                     behaviour tests for Claude Code's plugin eval runner
 site/                      the project page, runs the engine live in the browser
+tools/release.sh           bumps every manifest, verifies, tags and publishes a release
 ```
 
 ## Credits

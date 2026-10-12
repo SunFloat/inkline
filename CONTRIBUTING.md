@@ -38,6 +38,28 @@ Try changes against real inputs:
 - A new preset needs a row in `references/styles.md`, the README table, and a look at `inkline sheet` output on at least one portrait and one SVG.
 - Keep the skill text short and imperative; it is read by a model on every run.
 
+## Behaviour evals
+
+The engine tests check pixels and files; the evals check what Claude does with the skill (does it fire,
+does it ask before installing, does it save styles). They use your Claude credentials:
+
+```bash
+claude plugin eval . --allow-tools Bash Write
+```
+
+See `evals/README.md`.
+
+## Releasing
+
+```bash
+tools/release.sh 1.2.0 --dry-run   # bump + verify, no commit
+tools/release.sh 1.2.0             # bump, verify, commit, tag, push, GitHub release
+```
+
+Claude Code pins users to the manifest `version`, so a change only reaches them through a release.
+Bump `skills/inkline/engine/package.json` (and its lockfile) only when the engine's dependencies
+change: that is what makes existing users run `inkline setup` again.
+
 ## Regenerating the site data
 
 ```bash

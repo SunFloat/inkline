@@ -50,7 +50,8 @@ frames; parallel workers render disjoint frame ranges and are stitched losslessl
 | Symptom | Fix |
 |---|---|
 | `node: command not found` | Install Node.js 18+ (LTS) from nodejs.org, then rerun. |
-| `setup required` / exit code 3 | The engine is not installed. `inkline doctor` lists what `inkline setup` would install; run it once you agree. |
+| `setup required` / exit code 3 | The engine is not installed, or an inkline update needs other package versions. `inkline doctor` lists what `inkline setup` would do and where; run it once you agree. |
+| Where is the engine? | `$INKLINE_DATA/engine` (Claude Code's plugin data folder) or `~/.cache/inkline/engine`. Deleting that folder is a clean uninstall of the engine. |
 | `No Chrome … found` | Install Chrome/Edge/Chromium, set `INKLINE_CHROME=/path/to/chrome`, or run `inkline setup --with-chrome`. |
 | `ffmpeg … failed` | Set `INKLINE_FFMPEG=/path/to/ffmpeg`, or delete `engine/node_modules` and run `inkline setup` again. |
 | `Nothing to draw` | The image is nearly flat. Use a higher-contrast photo, `--detail 0.9`, or crop to the subject. |

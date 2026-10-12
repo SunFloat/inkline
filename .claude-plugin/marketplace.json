@@ -9,7 +9,7 @@
       "name": "inkline",
       "source": "./",
       "description": "Prompt, photo or SVG in, hand-drawn video out. Local rendering, eleven styles, custom styles as JSON.",
-      "version": "1.0.0",
+      "version": "1.1.0",
       "license": "MIT"
     }
   ]

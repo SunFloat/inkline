@@ -11,8 +11,12 @@ async function doctor() {
   const report = {};
   const [major] = process.versions.node.split('.').map(Number);
   report.node = `${process.versions.node}${major >= 18 ? '' : '  (needs >= 18)'}`;
-  const missing = DEPS.filter((d) => !hasModule(d));
-  report.engine = missing.length ? `missing: ${missing.join(', ')}` : 'installed';
+  // the launcher knows what is installed where; without it (direct node call) probe the modules
+  const state = process.env.INKLINE_ENGINE_STATE;
+  const missing = state === 'missing' ? DEPS.slice() : DEPS.filter((d) => !hasModule(d));
+  const home = process.env.INKLINE_ENGINE_HOME || path.join(ENGINE, 'node_modules');
+  const outdated = !missing.length && process.env.INKLINE_ENGINE_STATE === 'outdated';
+  report.engine = missing.length ? `missing: ${missing.join(', ')}` : outdated ? `outdated (installed for another inkline release) in ${home}` : `installed in ${home}`;
   report.chrome = findSystemChrome() || (await findCachedChrome()) || 'not found';
   if (missing.length) report.ffmpeg = 'comes with the engine';
   else {
@@ -21,12 +25,12 @@ async function doctor() {
     report.ffmpeg = v.status === 0 ? v.stdout.split('\n')[0].replace(/ Copyright.*/, '') : 'found but failed to run: ' + bin;
   }
   if (major < 18) report.status = 'node too old';
-  else if (missing.length) report.status = 'setup required';
+  else if (missing.length || outdated) report.status = 'setup required';
   else if (report.chrome === 'not found') report.status = 'chrome required';
   else if (/failed/.test(report.ffmpeg)) report.status = 'needs attention';
   else report.status = 'ready';
   if (report.status === 'setup required') {
-    report.setup = `inkline setup installs ${DEPS.join(', ')} from the npm registry into ${path.join(ENGINE, 'node_modules')} (about 80 MB, includes an ffmpeg binary). Nothing is installed until you run it.`;
+    report.setup = `inkline setup ${outdated ? 'updates' : 'installs'} ${DEPS.join(', ')} from the npm registry in ${home} (about 80 MB, includes an ffmpeg binary). Nothing is installed until you run it.`;
   }
   if (report.chrome === 'not found') {
     report.chromeHelp = `install Chrome/Edge/Chromium, set INKLINE_CHROME, or run inkline setup --with-chrome (downloads headless Chrome, ~90 MB, into ${CACHE})`;

@@ -1,10 +1,23 @@
 {
   "name": "inkline",
-  "description": "Turn a prompt, photo or SVG into a hand-drawn video. Pencil, pen, marker, chalk and neon drawings that appear stroke by stroke, rendered locally from HTML/JS.",
-  "version": "1.0.0",
-  "author": { "name": "Benjamin Buchta" },
-  "homepage": "https://github.com/SunFloat/inkline",
+  "description": "Turn a prompt, photo or SVG into a hand-drawn video: pencil, pen, marker, chalk or neon drawings that appear stroke by stroke, rendered locally from HTML/JS.",
+  "version": "1.1.0",
+  "author": {
+    "name": "Benjamin Buchta"
+  },
+  "homepage": "https://sunfloat.github.io/inkline/site/",
   "repository": "https://github.com/SunFloat/inkline",
   "license": "MIT",
-  "keywords": ["video", "drawing", "sketch", "portrait", "whiteboard", "animation", "skill"]
+  "keywords": [
+    "drawing",
+    "sketch",
+    "video",
+    "portrait",
+    "whiteboard",
+    "animation",
+    "speed-drawing",
+    "svg",
+    "headless-chrome",
+    "skill"
+  ]
 }

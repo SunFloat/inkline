@@ -8,6 +8,14 @@ description: >
   any image-to-drawing-video job. Offers optional question rounds to pick or invent a style,
   and saves custom styles for reuse. Renders locally from HTML/JS (headless Chrome + bundled
   ffmpeg); no server, no account, no upload.
+license: MIT
+compatibility: >
+  Needs Node.js 18+ and a Chromium-based browser (Chrome, Edge, Chromium or Brave). A one-time,
+  user-approved setup installs three npm packages (~80 MB incl. ffmpeg). Renders locally, offline after setup.
+metadata:
+  version: "1.1.0"
+  author: Benjamin Buchta
+  homepage: https://sunfloat.github.io/inkline/site/
 ---
 
 # inkline
@@ -21,10 +29,17 @@ Reply in the user's language. Everything below is written for you, not for them.
 
 ## 0. Runtime and consent
 
-All commands run through the launcher next to this file:
+Run every inkline command exactly in this form, with the variable left as written:
 
 ```bash
-INKLINE="<this skill's directory>/scripts/inkline"
+INKLINE_DATA="${CLAUDE_PLUGIN_DATA}" "<this skill's directory>/scripts/inkline" <command> …
+```
+
+In a plugin install, Claude Code fills in `${CLAUDE_PLUGIN_DATA}`, a folder that survives plugin updates
+and is removed on uninstall. Installed any other way, the variable is empty and inkline uses
+`~/.cache/inkline`. Below and in the references, `"$INKLINE"` is shorthand for that whole prefix.
+
+```bash
 "$INKLINE" doctor --json      # reports what is installed; changes nothing
 ```
 
@@ -32,8 +47,8 @@ inkline never installs anything on its own. Before the first render, run `doctor
 
 - `status: ready` → go on.
 - `status: setup required` → the render engine (npm packages `puppeteer-core`, `@puppeteer/browsers`,
-  `ffmpeg-static`, about 80 MB including an ffmpeg binary, from the npm registry, into the skill's
-  `engine/node_modules`) is missing. Tell the user exactly that, in one or two sentences, and ask
+  `ffmpeg-static`, about 80 MB including an ffmpeg binary, from the npm registry, into the folder the
+  `setup` line of the report names) is missing, or an inkline update needs different packages. Tell the user exactly that, in one or two sentences, and ask
   for permission with the structured question tool. Only after a clear yes run `"$INKLINE" setup --json`.
   If they decline, stop and explain that nothing can be rendered without it; they can run
   `inkline setup` themselves later.

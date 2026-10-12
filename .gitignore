@@ -4,3 +4,4 @@ inkline-out/
 *.preview.html
 .DS_Store
 *.log
+evals/results/

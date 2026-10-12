@@ -1,0 +1,44 @@
+{
+  "name": "inkline",
+  "description": "Turn a prompt, photo or SVG into a hand-drawn video: pencil, pen, marker, chalk or neon drawings that appear stroke by stroke, rendered locally from HTML/JS.",
+  "version": "1.1.0",
+  "author": {
+    "name": "Benjamin Buchta"
+  },
+  "homepage": "https://sunfloat.github.io/inkline/site/",
+  "repository": "https://github.com/SunFloat/inkline",
+  "license": "MIT",
+  "keywords": [
+    "drawing",
+    "sketch",
+    "video",
+    "portrait",
+    "whiteboard",
+    "animation",
+    "speed-drawing",
+    "svg",
+    "headless-chrome",
+    "skill"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "inkline",
+    "shortDescription": "Prompt in, hand-drawn video out",
+    "longDescription": "Draw photos, prompts and SVGs as videos: the drawing appears stroke by stroke with the tool in frame, then an optional colour wash and procedural drawing sound. Eleven styles plus your own as JSON. Renders locally with Node and headless Chrome after a one-time, user-approved setup.",
+    "developerName": "Benjamin Buchta",
+    "category": "Creativity",
+    "capabilities": [
+      "Read",
+      "Write"
+    ],
+    "websiteURL": "https://sunfloat.github.io/inkline/site/",
+    "defaultPrompt": [
+      "Draw my photo as a pencil sketch video for Reels",
+      "Make a 15-second whiteboard video of a rocket launching",
+      "Turn logo.svg into a gold-ink drawing, square, with sound"
+    ],
+    "brandColor": "#141414",
+    "composerIcon": "./assets/icon.png",
+    "logo": "./assets/logo.png"
+  }
+}

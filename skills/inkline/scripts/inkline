@@ -1,5 +1,9 @@
 #!/usr/bin/env sh
 # inkline launcher. Installs nothing on its own: `inkline setup` is the only command that does.
+#
+# The engine's npm packages live outside the skill, so plugin updates never wipe them:
+#   $INKLINE_DATA/engine        when set (Claude Code passes ${CLAUDE_PLUGIN_DATA} here)
+#   ~/.cache/inkline/engine     otherwise (XDG_CACHE_HOME is respected)
 set -e
 DIR="$(cd "$(dirname "$0")/.." && pwd)"
 ENGINE="$DIR/engine"
@@ -14,29 +18,45 @@ if [ "$MAJOR" -lt 18 ]; then
   exit 1
 fi
 
-READY=1
+DATA="${INKLINE_DATA:-${XDG_CACHE_HOME:-$HOME/.cache}/inkline}"
+HOME_DIR="$DATA/engine"
+MODULES="$HOME_DIR/node_modules"
+
+# ready = all packages present and installed from this release's lockfile
+STATE=ready
 for dep in puppeteer-core @puppeteer/browsers ffmpeg-static; do
-  [ -d "$ENGINE/node_modules/$dep" ] || READY=0
+  [ -d "$MODULES/$dep" ] || STATE=missing
 done
+if [ "$STATE" = ready ] && ! cmp -s "$ENGINE/package-lock.json" "$HOME_DIR/package-lock.json"; then
+  STATE=outdated
+fi
+
+export NODE_PATH="$MODULES"
+export INKLINE_ENGINE_HOME="$HOME_DIR"
+export INKLINE_ENGINE_STATE="$STATE"
 
 case "$1" in
   setup)
-    if [ "$READY" = 0 ]; then
-      echo "inkline · installing the render engine into $ENGINE/node_modules" >&2
+    if [ "$STATE" != ready ]; then
+      echo "inkline · installing the render engine into $HOME_DIR" >&2
       echo "inkline · packages: puppeteer-core, @puppeteer/browsers, ffmpeg-static (about 80 MB, from the npm registry)" >&2
-      if [ -f "$ENGINE/package-lock.json" ]; then
-        (cd "$ENGINE" && npm ci --omit=dev --no-audit --no-fund --loglevel=error >&2)
-      else
-        (cd "$ENGINE" && npm install --omit=dev --no-audit --no-fund --loglevel=error >&2)
-      fi
+      mkdir -p "$HOME_DIR"
+      cp "$ENGINE/package.json" "$ENGINE/package-lock.json" "$HOME_DIR/"
+      (cd "$HOME_DIR" && npm ci --omit=dev --no-audit --no-fund --loglevel=error >&2)
+      export INKLINE_ENGINE_STATE=ready
     fi
     ;;
   ""|help|-h|--help|-v|--version|doctor|styles|style) ;;
   *)
-    if [ "$READY" = 0 ]; then
+    if [ "$STATE" = missing ]; then
       echo "inkline · setup required: the render engine is not installed yet." >&2
-      echo "inkline · run \`inkline setup\` to install puppeteer-core, @puppeteer/browsers and ffmpeg-static" >&2
-      echo "inkline · (about 80 MB, into $ENGINE/node_modules). \`inkline doctor\` shows the details." >&2
+      echo "inkline · \`inkline setup\` would install puppeteer-core, @puppeteer/browsers and ffmpeg-static" >&2
+      echo "inkline · (about 80 MB, into $HOME_DIR). \`inkline doctor\` shows the details." >&2
+      exit 3
+    fi
+    if [ "$STATE" = outdated ]; then
+      echo "inkline · setup required: this inkline release needs different engine packages than the ones in $HOME_DIR." >&2
+      echo "inkline · \`inkline setup\` would update them. \`inkline doctor\` shows the details." >&2
       exit 3
     fi
     ;;
