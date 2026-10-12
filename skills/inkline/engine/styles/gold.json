@@ -1,0 +1,49 @@
+{
+  "$schema": "../style.schema.json",
+  "name": "gold",
+  "label": "Gold leaf",
+  "medium": "metallic gold ink on black card",
+  "paper": {
+    "texture": "black",
+    "color": "#121110"
+  },
+  "ink": {
+    "color": "#d9b45a",
+    "width": 1.8,
+    "opacity": 0.95,
+    "taper": 0.35,
+    "grain": 0.15,
+    "jitter": 0.3,
+    "glow": 2.5,
+    "glowColor": "#9c7124",
+    "blend": "screen"
+  },
+  "layers": {
+    "shade": {
+      "width": 0.5,
+      "opacity": 0.6,
+      "speed": 0.5
+    }
+  },
+  "trace": {
+    "detail": 0.6,
+    "hatch": "crosshatch",
+    "hatchDensity": 0.45,
+    "levels": 3,
+    "invert": true
+  },
+  "pen": {
+    "tool": "fineliner",
+    "color": "#d9b45a"
+  },
+  "color": {
+    "reveal": "none"
+  },
+  "sound": {
+    "kind": "pen",
+    "volume": 0.6
+  },
+  "sketch": {
+    "invert": true
+  }
+}

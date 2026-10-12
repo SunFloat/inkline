@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 1000">
+  <!-- inkline SVG: document order is drawing order; fills become the colour wash -->
+  <g data-ink-layer="contour" fill="none" stroke="#111" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round">
+    <!-- sky and sea are colour only -->
+    <rect x="0" y="0" width="800" height="780" fill="#cfe3ea" data-ink="none"/>
+    <rect x="0" y="780" width="800" height="220" fill="#5f8fa8" data-ink="none"/>
+    <!-- sun -->
+    <circle cx="620" cy="300" r="70" fill="#f6c453"/>
+    <!-- cliff -->
+    <path d="M240 1000 C250 900 280 800 300 700 C316 620 340 570 380 548 C430 536 470 560 520 600 C560 632 600 700 660 742 C700 770 740 790 770 800 L770 1000" fill="#7d8b6a"/>
+    <path d="M40 780 L250 780" />
+    <!-- lighthouse body -->
+    <path d="M330 548 L352 250 L448 250 L470 548 Z" fill="#f4efe6"/>
+    <path d="M337 460 L463 460 L468 520 L333 520 Z" fill="#d8443a"/>
+    <path d="M345 360 L455 360 L459 410 L341 410 Z" fill="#d8443a"/>
+    <path d="M351 270 L449 270 L452 305 L348 305 Z" fill="#d8443a"/>
+    <!-- gallery and lantern -->
+    <path d="M326 250 L474 250 L474 232 L326 232 Z" fill="#2f3a46"/>
+    <path d="M356 232 L356 168 L444 168 L444 232" fill="#ffe7a3"/>
+    <path d="M346 168 Q400 112 454 168 Z" fill="#2f3a46"/>
+    <path d="M400 112 L400 92"/>
+    <!-- door and window -->
+    <path d="M388 548 L388 500 Q400 486 412 500 L412 548" fill="#2f3a46"/>
+    <path d="M392 330 L408 330 L408 350 L392 350 Z" fill="#2f3a46"/>
+  </g>
+  <g data-ink-layer="detail" fill="none" stroke="#111" stroke-width="2.2" stroke-linecap="round">
+    <!-- lantern mullions and beams -->
+    <path d="M378 170 L378 230 M400 170 L400 230 M422 170 L422 230"/>
+    <path d="M330 196 L150 160 M330 214 L150 248" stroke="#c99a2e"/>
+    <!-- sea -->
+    <path d="M40 800 C80 790 110 812 150 800 C190 788 220 812 260 800" />
+    <path d="M60 860 C100 850 130 872 170 860 C200 850 220 862 250 858" />
+    <path d="M30 930 C70 920 100 942 140 930 C180 918 210 942 250 930" />
+    <!-- birds -->
+    <path d="M180 330 q14 -14 28 0 q14 -14 28 0"/>
+    <path d="M236 290 q10 -10 20 0 q10 -10 20 0"/>
+    <path d="M560 380 q12 -12 24 0 q12 -12 24 0"/>
+    <!-- cliff grass -->
+    <path d="M250 628 l6 -16 M262 626 l2 -18 M274 624 l-4 -14 M520 600 l6 -16 M534 610 l2 -16 M600 690 l8 -14"/>
+  </g>
+  <g data-ink-layer="shade" fill="none" stroke="#111" stroke-width="1.6" stroke-linecap="round" opacity="0.8">
+    <path d="M440 300 L446 300 M436 330 L450 330 M438 420 L455 420 M440 440 L456 440 M444 540 L466 540"/>
+    <path d="M600 990 L700 880 M650 995 L740 900 M560 980 L640 892"/>
+  </g>
+</svg>

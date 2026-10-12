@@ -1,0 +1,61 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 1000">
+  <!-- A sitting fox, authored for inkline: contour, then features, then fur detail, then shading. -->
+
+  <g data-ink-layer="contour" fill="none" stroke="#111" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round">
+    <!-- head: cheeks, ears, muzzle -->
+    <path d="M262 318 C252 262 254 196 270 142 C300 170 330 206 346 238 C380 226 420 226 454 238 C470 206 500 170 530 142 C546 196 548 262 538 318 C562 344 580 372 588 398 C540 420 500 452 470 494 C452 520 428 540 400 548 C372 540 348 520 330 494 C300 452 260 420 212 398 C220 372 238 344 262 318 Z" fill="#e07a3a"/>
+    <!-- white cheeks and chin -->
+    <path d="M212 398 C262 404 306 430 336 470 C354 494 376 512 400 516 C424 512 446 494 464 470 C494 430 538 404 588 398 C570 438 534 470 500 492 C470 512 440 540 400 548 C360 540 330 512 300 492 C266 470 230 438 212 398 Z" fill="#fbf4e8"/>
+    <!-- inner ears -->
+    <path d="M280 182 C298 204 314 226 324 246 C304 256 290 270 280 288 C272 252 272 214 280 182 Z" fill="#5a3a2c"/>
+    <path d="M520 182 C502 204 486 226 476 246 C496 256 510 270 520 288 C528 252 528 214 520 182 Z" fill="#5a3a2c"/>
+    <!-- body -->
+    <path d="M330 520 C290 580 262 660 258 740 C254 820 290 880 360 896 L440 896 C510 880 546 820 542 740 C538 660 510 580 470 520" fill="#e07a3a"/>
+    <!-- chest bib -->
+    <path d="M352 540 C340 600 340 680 372 760 C384 790 392 820 400 846 C408 820 416 790 428 760 C460 680 460 600 448 540" fill="#fbf4e8"/>
+    <!-- front legs -->
+    <path d="M356 740 C352 800 350 850 346 892 C362 900 382 900 392 892" />
+    <path d="M444 740 C448 800 450 850 454 892 C438 900 418 900 408 892" />
+    <!-- tail wrapped around the paws -->
+    <path d="M542 760 C610 760 668 800 676 850 C684 900 620 930 520 926 C440 922 360 922 300 916 C340 900 420 902 500 900 C570 898 612 880 606 850 C600 818 570 800 536 800" fill="#e07a3a"/>
+    <path d="M300 916 C330 896 380 892 430 900 C390 914 340 922 300 916 Z" fill="#fbf4e8"/>
+  </g>
+
+  <g data-ink-layer="detail" fill="none" stroke="#111" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+    <!-- eyes -->
+    <path d="M318 352 C336 338 358 338 372 352 C356 364 334 364 318 352 Z" fill="#141414"/>
+    <path d="M482 352 C464 338 442 338 428 352 C444 364 466 364 482 352 Z" fill="#141414"/>
+    <path d="M342 348 l4 0 M454 348 l4 0" stroke="#fff" stroke-width="3"/>
+    <!-- brows -->
+    <path d="M314 330 C330 318 350 316 366 322"/>
+    <path d="M486 330 C470 318 450 316 434 322"/>
+    <!-- nose and mouth -->
+    <path d="M386 486 C392 478 408 478 414 486 C410 496 390 496 386 486 Z" fill="#1d1715"/>
+    <path d="M400 496 L400 512 C392 522 380 522 372 516 M400 512 C408 522 420 522 428 516"/>
+    <!-- muzzle line -->
+    <path d="M372 400 C380 430 388 456 392 476 M428 400 C420 430 412 456 408 476"/>
+    <!-- whiskers -->
+    <path d="M360 500 C330 498 300 504 274 516 M362 508 C334 512 308 524 288 540"/>
+    <path d="M440 500 C470 498 500 504 526 516 M438 508 C466 512 492 524 512 540"/>
+    <!-- paws -->
+    <path d="M354 888 l2 -10 M366 892 l1 -10 M434 892 l-1 -10 M446 888 l-2 -10"/>
+    <!-- tail tip -->
+    <path d="M620 830 C640 840 650 856 644 872"/>
+  </g>
+
+  <g data-ink-layer="detail" fill="none" stroke="#111" stroke-width="2.6" stroke-linecap="round">
+    <path d="M170 930 C260 922 330 936 420 930 C520 924 600 934 690 926"/>
+  </g>
+
+  <g data-ink-layer="shade" fill="none" stroke="#111" stroke-width="1.5" stroke-linecap="round" opacity="0.85">
+    <!-- fur on the head -->
+    <path d="M300 280 l10 -14 M314 290 l10 -14 M328 296 l9 -13 M472 296 l-9 -13 M486 290 l-10 -14 M500 280 l-10 -14"/>
+    <!-- shadow side of the body -->
+    <path d="M500 600 l22 -26 M506 630 l24 -28 M510 660 l24 -28 M512 690 l24 -28 M512 720 l24 -28 M510 750 l22 -26"/>
+    <path d="M276 640 l18 22 M272 670 l18 22 M270 700 l18 22 M270 730 l18 22"/>
+    <!-- under the chin -->
+    <path d="M372 556 l10 12 M386 560 l10 12 M400 562 l10 12 M414 560 l10 12"/>
+    <!-- tail fur -->
+    <path d="M560 914 l14 -14 M590 910 l14 -14 M620 902 l12 -14 M650 886 l10 -14"/>
+  </g>
+</svg>

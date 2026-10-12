@@ -1,0 +1,622 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>inkline · prompt in, hand-drawn video out</title>
+<meta name="description" content="inkline is an open-source Claude skill that turns a prompt, a photo or an SVG into a video of it being drawn by hand, stroke by stroke. Rendered locally from HTML and JavaScript.">
+<meta property="og:title" content="inkline · prompt in, hand-drawn video out">
+<meta property="og:description" content="A Claude skill that draws your prompt or photo, stroke by stroke, and renders the video on your machine.">
+<meta property="og:image" content="media/og.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#f6f7f4">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23f6f7f4'/%3E%3Cpath d='M7 23 C10 15 13 9 16 9 C19 9 17 18 20 18 C23 18 24 12 25 10' fill='none' stroke='%23141414' stroke-width='3.2' stroke-linecap='round'/%3E%3C/svg%3E">
+<style>
+  @font-face { font-family: "Marker"; src: url("../skills/inkline/engine/assets/fonts/permanent-marker-400.woff2") format("woff2"); font-display: swap; }
+  @font-face { font-family: "Grotesk"; src: url("../skills/inkline/engine/assets/fonts/schibsted-grotesk-400-800.woff2") format("woff2"); font-weight: 400 800; font-display: swap; }
+  @font-face { font-family: "Mono"; src: url("../skills/inkline/engine/assets/fonts/jetbrains-mono-400-600.woff2") format("woff2"); font-weight: 400 600; font-display: swap; }
+
+  :root {
+    --wall: #f6f7f4;
+    --ghost: #d8dbd7;
+    --marker: #141414;
+    --blue: #1f4fd8;
+    --red: #e0322b;
+    --tray: #e3e5e1;
+    --tray-edge: #b9bdb7;
+    --muted: #4a504c;
+    --line: 2px;
+    --r: 8px;
+    --gutter: clamp(16px, 4vw, 56px);
+    --max: 1320px;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; scroll-padding-top: 72px; }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } *, *::before, *::after { transition: none !important; animation: none !important; } }
+  body {
+    margin: 0;
+    background: var(--wall);
+    color: var(--marker);
+    font: 400 17px/1.55 "Grotesk", system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+  ::selection { background: var(--blue); color: var(--wall); }
+  :focus-visible { outline: var(--line) solid var(--blue); outline-offset: 3px; border-radius: 4px; }
+  ::-webkit-scrollbar { width: 12px; height: 12px; }
+  ::-webkit-scrollbar-track { background: var(--wall); }
+  ::-webkit-scrollbar-thumb { background: var(--ghost); border: 3px solid var(--wall); border-radius: 8px; }
+  html { scrollbar-color: var(--ghost) var(--wall); }
+  a { color: var(--blue); text-decoration-thickness: 2px; text-underline-offset: 4px; }
+  a:hover { text-decoration-thickness: 3px; }
+  img, video, canvas { display: block; max-width: 100%; }
+  button { font: inherit; color: inherit; }
+  code, pre, .mono { font-family: "Mono", ui-monospace, monospace; font-variant-numeric: tabular-nums; }
+  .wrap { max-width: var(--max); margin: 0 auto; padding: 0 var(--gutter); }
+  .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+  /* ---------- nav */
+  .nav { position: sticky; top: 0; z-index: 10; background: var(--wall); border-bottom: 1px solid transparent; transition: border-color .2s ease-out; }
+  .nav.scrolled { border-bottom-color: var(--ghost); }
+  .nav .wrap { display: flex; align-items: center; justify-content: space-between; height: 64px; }
+  .nav .brand { display: block; width: 116px; line-height: 0; }
+  .nav .brand svg { width: 100%; height: auto; overflow: visible; }
+  .nav .brand svg, footer .brand svg { fill: none; stroke: var(--marker); stroke-width: 9; stroke-linecap: round; stroke-linejoin: round; }
+  .nav ul { display: flex; gap: clamp(14px, 2.4vw, 32px); list-style: none; margin: 0; padding: 0; align-items: center; }
+  .nav a.link { color: var(--marker); text-decoration: none; font-weight: 600; font-size: 15px; }
+  .nav a.link:hover { color: var(--blue); }
+  .pill {
+    display: inline-flex; align-items: center; gap: 8px; padding: 8px 16px;
+    border: var(--line) solid var(--marker); border-radius: 999px; text-decoration: none; color: var(--marker); font-weight: 700; font-size: 15px;
+    transition: background-color .15s ease-out, color .15s ease-out;
+  }
+  .pill:hover { background: var(--marker); color: var(--wall); }
+  .pill svg { width: 18px; height: 18px; }
+  @media (max-width: 720px) { .nav ul li.hide-s { display: none; } }
+
+  /* ---------- hero: the wall */
+  .hero { padding: clamp(20px, 4vw, 48px) 0 clamp(48px, 7vw, 96px); }
+  .hero .wrap { display: grid; grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr); gap: clamp(28px, 5vw, 80px); align-items: center; }
+  .wm-h { margin: 0; font-size: 1em; line-height: 0; }
+  .wordmark { width: min(100%, 520px); height: auto; overflow: visible; margin: 0 0 18px -6px; }
+  .wordmark path { fill: none; stroke: var(--marker); stroke-linecap: round; stroke-linejoin: round; }
+  .promise { font-size: clamp(26px, 2.7vw, 38px); line-height: 1.16; font-weight: 700; letter-spacing: -0.02em; margin: 0 0 18px; text-wrap: balance; max-width: 18ch; }
+  .lede { font-size: clamp(17px, 1.35vw, 19px); color: var(--muted); margin: 0 0 30px; max-width: 46ch; }
+  .lede strong { color: var(--marker); font-weight: 600; }
+
+  .tray {
+    display: flex; align-items: stretch; gap: 0; max-width: 560px;
+    background: var(--tray); border: 1px solid var(--tray-edge); border-radius: var(--r); overflow: hidden;
+  }
+  .tray code { flex: 1; min-width: 0; padding: 15px 16px; color: var(--blue); font-size: 15px; font-weight: 600; white-space: nowrap; overflow-x: auto; scrollbar-width: none; }
+  .tray code::-webkit-scrollbar { display: none; }
+  .tray code .p { color: var(--muted); user-select: none; }
+  .copy {
+    border: 0; border-left: 1px solid var(--tray-edge); background: transparent; padding: 0 18px; cursor: pointer; font-weight: 700; font-size: 14px; min-width: 88px;
+    transition: background-color .15s ease-out, color .15s ease-out;
+  }
+  .copy:hover { background: var(--marker); color: var(--wall); }
+  .copy[data-done] { background: var(--blue); color: var(--wall); }
+  .then { margin: 14px 0 0; font-size: 15px; color: var(--muted); }
+  .then em { font-style: normal; font-family: "Marker", sans-serif; color: var(--blue); font-size: 17px; }
+
+  .stage { display: grid; gap: 14px; justify-items: stretch; }
+  .board {
+    position: relative; aspect-ratio: 4 / 5; width: 100%; max-height: min(78vh, 860px);
+    margin: 0 auto; border: var(--line) solid var(--marker); border-radius: 4px; overflow: hidden; background: var(--wall);
+  }
+  .board canvas { width: 100%; height: 100%; }
+  .board .note {
+    position: absolute; inset: 0; display: grid; place-items: center; font-family: "Marker", sans-serif; font-size: 22px; color: var(--muted);
+    transition: opacity .3s ease-out; pointer-events: none;
+  }
+  .board .note[hidden] { display: grid; opacity: 0; }
+  .instrument { display: flex; flex-wrap: wrap; gap: 10px 16px; align-items: center; justify-content: space-between; }
+  .readout {
+    display: inline-flex; align-items: center; gap: 12px; border: var(--line) solid var(--marker); border-radius: var(--r);
+    padding: 6px 12px; font-family: "Mono", monospace; font-size: 14px; background: var(--wall);
+    flex-wrap: wrap; row-gap: 2px; max-width: 100%;
+  }
+  .readout b { font-weight: 600; font-size: 16px; min-width: 8ch; }
+  .readout .rec { width: 10px; height: 10px; border-radius: 50%; background: var(--ghost); flex: none; }
+  .readout[data-live] .rec { background: var(--red); }
+  .readout span { color: var(--muted); }
+  .replay {
+    border: var(--line) solid var(--marker); background: transparent; border-radius: 999px; padding: 7px 14px; font-weight: 700; font-size: 14px; cursor: pointer;
+    display: inline-flex; gap: 8px; align-items: center; transition: background-color .15s ease-out, color .15s ease-out;
+  }
+  .replay:hover { background: var(--marker); color: var(--wall); }
+  .replay svg { width: 16px; height: 16px; }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .chip {
+    border: var(--line) solid var(--marker); border-radius: 999px; background: transparent; padding: 6px 13px; cursor: pointer;
+    font-family: "Marker", sans-serif; font-size: 15px; line-height: 1.2; transition: background-color .15s ease-out, color .15s ease-out;
+  }
+  .chip:hover { background: var(--ghost); }
+  .chip[aria-pressed="true"] { background: var(--marker); color: var(--wall); }
+
+  @media (max-width: 720px) {
+    .tray code { white-space: pre-wrap; overflow-wrap: anywhere; }
+    pre.json { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 13px; }
+  }
+  @media (max-width: 960px) {
+    .hero .wrap { grid-template-columns: minmax(0, 1fr); }
+    .wordmark { width: min(100%, 380px); }
+    .board { max-height: none; }
+  }
+
+  /* ---------- sections */
+  section.band { padding: clamp(64px, 9vw, 128px) 0; border-top: var(--line) solid var(--marker); }
+  .band h2 { font-family: "Marker", sans-serif; font-weight: 400; font-size: clamp(34px, 4.6vw, 64px); line-height: 1.12; margin: 0 0 16px; letter-spacing: 0.005em; text-wrap: balance; }
+  .band .intro { font-size: clamp(17px, 1.4vw, 20px); color: var(--muted); max-width: 60ch; margin: 0 0 clamp(36px, 5vw, 64px); }
+
+  /* examples */
+  .examples { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: clamp(20px, 3vw, 40px); }
+  .example { display: grid; gap: 14px; align-content: start; margin: 0; }
+  .say { font-family: "Marker", sans-serif; color: var(--blue); font-size: clamp(19px, 1.7vw, 24px); line-height: 1.2; margin: 0; min-height: 2.4em; }
+  .say::before { content: "“"; } .say::after { content: "”"; }
+  .clip { border: var(--line) solid var(--marker); border-radius: 4px; overflow: hidden; aspect-ratio: 4 / 5; background: var(--wall); }
+  .clip video { width: 100%; height: 100%; object-fit: cover; }
+  .example figcaption { font-size: 14px; color: var(--muted); }
+  .example figcaption b { color: var(--marker); font-weight: 600; }
+  @media (max-width: 860px) { .examples { grid-template-columns: minmax(0, 1fr); max-width: 460px; } }
+
+  /* styles: labelled batches */
+  .batches { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 16px; }
+  .batch {
+    border: var(--line) solid var(--marker); border-radius: var(--r); background: var(--wall); padding: 0; cursor: pointer; text-align: left;
+    display: grid; grid-template-rows: auto 1fr; overflow: hidden; transition: transform .2s cubic-bezier(.2,.8,.2,1);
+  }
+  .batch:hover { transform: translateY(-3px); }
+  .batch:hover .swatch { border-bottom-color: var(--blue); }
+  .batch .swatch { aspect-ratio: 4 / 5; background-image: url("media/styles-sheet.webp"); background-size: 500% 200%; border-bottom: var(--line) solid var(--marker); transition: border-color .15s ease-out; }
+  .batch .label { padding: 10px 12px 12px; display: grid; gap: 4px; }
+  .batch .label strong { font-family: "Marker", sans-serif; font-weight: 400; font-size: 19px; line-height: 1.1; }
+  .batch .label span { font-size: 13px; color: var(--muted); line-height: 1.35; }
+  .batch .label code { font-size: 11.5px; color: var(--marker); border-top: 1px solid var(--ghost); padding-top: 6px; margin-top: 2px; }
+  @media (max-width: 1100px) { .batches { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+  @media (max-width: 620px) { .batches { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  .more { margin-top: 24px; color: var(--muted); font-size: 15px; }
+
+  /* try it */
+  .try { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: clamp(28px, 5vw, 72px); align-items: center; }
+  .drop {
+    border: var(--line) dashed var(--marker); border-radius: 14px; min-height: 280px; display: grid; place-items: center; text-align: center; padding: 32px;
+    cursor: pointer; transition: background-color .15s ease-out, border-color .15s ease-out;
+  }
+  .drop:hover, .drop.over { background: #eceee9; border-color: var(--blue); }
+  .drop strong { font-family: "Marker", sans-serif; font-weight: 400; font-size: clamp(24px, 2.4vw, 32px); display: block; margin-bottom: 8px; }
+  .drop span { color: var(--muted); font-size: 15px; }
+  .drop .err { color: var(--marker); font-weight: 700; display: block; margin-top: 10px; text-decoration: underline wavy var(--blue); text-underline-offset: 5px; }
+  .points { margin: 0; padding: 0; list-style: none; display: grid; gap: 18px; }
+  .points li { padding-left: 34px; position: relative; }
+  .points li::before { content: ""; position: absolute; left: 0; top: 0.5em; width: 18px; height: 10px; border-left: 3px solid var(--blue); border-bottom: 3px solid var(--blue); transform: rotate(-45deg); border-radius: 1px; }
+  @media (max-width: 860px) { .try { grid-template-columns: minmax(0, 1fr); } }
+
+  /* make it yours */
+  .yours { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: clamp(24px, 4vw, 56px); align-items: start; }
+  .ask { border: var(--line) solid var(--marker); border-radius: 12px; padding: 20px; display: grid; gap: 14px; background: var(--wall); }
+  .ask .q { font-weight: 700; font-size: 18px; }
+  .ask .hdr { display: inline-block; font-family: "Mono", monospace; font-size: 12px; border: 1px solid var(--marker); border-radius: 4px; padding: 1px 6px; margin-right: 8px; vertical-align: 2px; }
+  .ask ol { margin: 0; padding: 0; list-style: none; display: grid; gap: 8px; counter-reset: o; }
+  .ask li { border: 1px solid var(--ghost); border-radius: 8px; padding: 10px 12px; counter-increment: o; display: grid; grid-template-columns: 26px 1fr; gap: 2px 8px; }
+  .ask li::before { content: counter(o); font-family: "Mono", monospace; font-size: 13px; color: var(--muted); grid-row: span 2; padding-top: 2px; }
+  .ask li b { font-weight: 600; }
+  .ask li span { font-size: 14px; color: var(--muted); }
+  .ask li.picked { border: var(--line) solid var(--blue); padding: 9px 11px; }
+  pre.json {
+    margin: 0; border: var(--line) solid var(--marker); border-radius: 12px; padding: 20px; background: var(--wall);
+    font-size: 14px; line-height: 1.6; overflow-x: auto;
+  }
+  pre.json .k { color: var(--marker); font-weight: 600; } pre.json .s { color: var(--blue); } pre.json .n { color: var(--muted); } pre.json .c { color: var(--muted); }
+  .file { font-family: "Mono", monospace; font-size: 13px; color: var(--muted); margin: 0 0 8px; }
+  @media (max-width: 860px) { .yours { grid-template-columns: minmax(0, 1fr); } }
+
+  /* engine */
+  .specs { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0; border-top: var(--line) solid var(--marker); margin: 0; }
+  .specs div { padding: 22px 24px 24px 0; border-bottom: 1px solid var(--ghost); }
+  .specs dt { font-family: "Marker", sans-serif; font-size: 20px; margin-bottom: 6px; }
+  .specs dd { margin: 0; color: var(--muted); max-width: 36ch; }
+  @media (max-width: 860px) { .specs { grid-template-columns: minmax(0, 1fr); } }
+
+  /* install */
+  .installs { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px; }
+  .install { display: grid; gap: 12px; align-content: start; }
+  .install h3 { margin: 0; font-size: 18px; font-weight: 700; }
+  .install p { margin: 0; color: var(--muted); font-size: 15px; }
+  .install .tray { max-width: none; }
+  .install pre { margin: 0; padding: 14px 16px; background: var(--tray); border: 1px solid var(--tray-edge); border-radius: var(--r); font-size: 13.5px; white-space: pre-wrap; overflow-wrap: anywhere; color: var(--blue); font-weight: 600; line-height: 1.6; }
+  @media (max-width: 960px) { .installs { grid-template-columns: minmax(0, 1fr); } }
+
+  footer { border-top: var(--line) solid var(--marker); padding: 40px 0 56px; font-size: 14px; color: var(--muted); }
+  footer .wrap { display: flex; flex-wrap: wrap; gap: 16px 40px; justify-content: space-between; }
+  footer .brand { width: 132px; line-height: 0; margin-bottom: 8px; }
+  footer .brand svg { width: 100%; height: auto; overflow: visible; }
+  footer p { margin: 4px 0; max-width: 62ch; }
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><symbol id="wm-small" viewBox="0 0 330 140"><path d="M14 70 C22 60 30 56 33 62 L31 110 C31 121 40 123 47 112"/><path d="M47 112 C52 92 56 66 60 57 C66 46 83 46 86 60 L88 113 C90 122 98 121 103 110"/><path d="M103 110 C108 80 115 32 118 15 C120 4 111 4 109 16 L105 117 M106 96 C112 80 124 66 137 63 C147 61 147 76 133 84 C125 88 117 88 112 88 C124 94 134 112 146 118 C152 121 158 117 162 108"/><path d="M162 108 C168 70 175 30 178 15 C180 4 171 4 169 16 L166 108 C166 121 176 123 184 110"/><path d="M184 110 C188 96 191 74 194 62 L192 112 C192 121 200 123 207 112"/><path d="M207 112 C212 92 216 66 220 57 C226 46 243 46 246 60 L248 113 C250 122 258 121 263 110"/><path d="M263 110 C272 100 290 92 300 82 C312 70 306 53 292 58 C276 63 266 84 270 101 C273 119 292 125 314 110"/><path d="M32 30 l3 2"/><path d="M195 30 l3 2"/></symbol></svg>
+<nav class="nav" id="nav" aria-label="Main">
+  <div class="wrap">
+    <a class="brand" href="#top" aria-label="inkline, back to top"><svg viewBox="0 0 330 140" aria-hidden="true"><use href="#wm-small"/></svg></a>
+    <ul>
+      <li class="hide-s"><a class="link" href="#examples">Examples</a></li>
+      <li class="hide-s"><a class="link" href="#styles">Styles</a></li>
+      <li class="hide-s"><a class="link" href="#try">Try it</a></li>
+      <li><a class="pill" href="https://github.com/SunFloat/inkline">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 .5a11.5 11.5 0 0 0-3.64 22.41c.58.1.79-.25.79-.56v-2c-3.2.7-3.88-1.37-3.88-1.37-.53-1.33-1.28-1.69-1.28-1.69-1.05-.72.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.77 2.7 1.26 3.36.96.1-.75.4-1.26.73-1.55-2.55-.29-5.24-1.28-5.24-5.68 0-1.26.45-2.28 1.19-3.09-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.17 1.18a11 11 0 0 1 5.77 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.23 2.76.11 3.05.74.81 1.19 1.83 1.19 3.09 0 4.41-2.69 5.38-5.25 5.67.41.36.78 1.06.78 2.14v3.17c0 .31.21.67.8.56A11.5 11.5 0 0 0 12 .5Z"/></svg>
+        GitHub</a></li>
+    </ul>
+  </div>
+</nav>
+
+<header class="hero" id="top">
+  <div class="wrap">
+    <div>
+      <h1 class="wm-h"><svg class="wordmark" id="wordmark" viewBox="0 0 330 140" role="img" aria-label="inkline, written by hand"><g id="wm">
+        <path d="M14 70 C22 60 30 56 33 62 L31 110 C31 121 40 123 47 112"/>
+        <path d="M47 112 C52 92 56 66 60 57 C66 46 83 46 86 60 L88 113 C90 122 98 121 103 110"/>
+        <path d="M103 110 C108 80 115 32 118 15 C120 4 111 4 109 16 L105 117 M106 96 C112 80 124 66 137 63 C147 61 147 76 133 84 C125 88 117 88 112 88 C124 94 134 112 146 118 C152 121 158 117 162 108"/>
+        <path d="M162 108 C168 70 175 30 178 15 C180 4 171 4 169 16 L166 108 C166 121 176 123 184 110"/>
+        <path d="M184 110 C188 96 191 74 194 62 L192 112 C192 121 200 123 207 112"/>
+        <path d="M207 112 C212 92 216 66 220 57 C226 46 243 46 246 60 L248 113 C250 122 258 121 263 110"/>
+        <path d="M263 110 C272 100 290 92 300 82 C312 70 306 53 292 58 C276 63 266 84 270 101 C273 119 292 125 314 110"/>
+        <path d="M32 30 l3 2"/>
+        <path d="M195 30 l3 2"/>
+      </g></svg></h1>
+      <p class="promise">Type a sentence or drop a photo. Get a video of it being drawn.</p>
+      <p class="lede"><strong>inkline is a Claude skill.</strong> It turns a prompt, a portrait or an SVG into a hand-drawn video: marker, pencil or chalk in frame, stroke by stroke, then a colour wash. Rendered on your machine from HTML and JavaScript.</p>
+      <div class="tray" role="group" aria-label="Install command">
+        <code id="cmd"><span class="p">&gt; </span>/plugin marketplace add SunFloat/inkline</code>
+        <button class="copy" data-copy="/plugin marketplace add SunFloat/inkline" type="button">Copy</button>
+      </div>
+      <p class="then">Then <code>/plugin install inkline@inkline</code> and ask: <em>draw my photo on a whiteboard</em></p>
+    </div>
+
+    <div class="stage">
+      <div class="board">
+        <canvas id="board" aria-label="Live drawing of Vermeer's Girl with a Pearl Earring"></canvas>
+        <div class="note" id="note">laying out the paper…</div>
+      </div>
+      <div class="instrument">
+        <div class="readout" id="readout" aria-live="off"><i class="rec" aria-hidden="true"></i><b id="tc">00:00.0</b><span id="sc">0 strokes</span></div>
+        <button class="replay" id="replay" type="button"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10a6 6 0 1 0 2-4.5M4 3v4h4" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>Draw again</button>
+      </div>
+      <div class="chips" role="group" aria-label="Drawing style for the live demo" id="chips"></div>
+    </div>
+  </div>
+</header>
+
+<section class="band" id="examples">
+  <div class="wrap">
+    <h2>Say what to draw.</h2>
+    <p class="intro">Every clip below came out of the skill exactly as shown. Portraits are public-domain paintings; the fox is an SVG Claude wrote from one sentence.</p>
+    <div class="examples">
+      <figure class="example">
+        <p class="say">Draw this portrait in charcoal.</p>
+        <div class="clip"><video src="media/web/vangogh-charcoal.mp4" poster="media/web/vangogh-charcoal.webp" muted loop playsinline preload="none" aria-label="Charcoal drawing of Van Gogh's self-portrait being drawn"></video></div>
+        <figcaption><b>Photo in.</b> Vincent van Gogh, Self-Portrait, 1887. Public domain.</figcaption>
+      </figure>
+      <figure class="example">
+        <p class="say">Draw a fox sitting, whiteboard style.</p>
+        <div class="clip"><video src="media/web/fox-whiteboard.mp4" poster="media/web/fox-whiteboard.webp" muted loop playsinline preload="none" aria-label="Whiteboard marker drawing of a sitting fox being drawn and coloured"></video></div>
+        <figcaption><b>Prompt in.</b> Claude wrote the line art as SVG; inkline drew it.</figcaption>
+      </figure>
+      <figure class="example">
+        <p class="say">Ink and watercolour, slowly.</p>
+        <div class="clip"><video src="media/web/hare-watercolor.mp4" poster="media/web/hare-watercolor.webp" muted loop playsinline preload="none" aria-label="Ink and watercolour drawing of Dürer's hare being drawn"></video></div>
+        <figcaption><b>Photo in.</b> Albrecht Dürer, Young Hare, 1502. Public domain.</figcaption>
+      </figure>
+    </div>
+  </div>
+</section>
+
+<section class="band" id="styles">
+  <div class="wrap">
+    <h2>Ten media on the shelf.</h2>
+    <p class="intro">Each style is a JSON file: paper, tool, line, shading, colour wash and sound. Pick one and the board above redraws in it.</p>
+    <div class="batches" id="batches"></div>
+    <p class="more">Plus <code>gold</code>, and any style you write yourself.</p>
+  </div>
+</section>
+
+<section class="band" id="try">
+  <div class="wrap try">
+    <div>
+      <h2>Try it on your photo.</h2>
+      <p class="intro">This page runs the same engine as the skill. Drop a picture and watch the board draw it.</p>
+      <ul class="points">
+        <li>Nothing is uploaded. The trace and the drawing happen in this tab.</li>
+        <li>Faces work best: sharp, well lit, a calm background.</li>
+        <li>The skill adds face-aware detail, sound, and the MP4.</li>
+      </ul>
+    </div>
+    <label class="drop" id="drop" tabindex="0">
+      <input type="file" id="file" accept="image/*" class="sr">
+      <div>
+        <strong>Drop a photo here</strong>
+        <span>or click to choose one · JPG, PNG, WebP</span>
+        <span class="err" id="dropErr" hidden></span>
+      </div>
+    </label>
+  </div>
+</section>
+
+<section class="band" id="yours">
+  <div class="wrap">
+    <h2>Ask for a style. Or invent one.</h2>
+    <p class="intro">Say "just do it" and inkline picks for you. Want a say? Claude asks a short round of questions, and a custom look is saved as a style you can reuse.</p>
+    <div class="yours">
+      <div class="ask" aria-label="Example question round">
+        <div class="q"><span class="hdr">Style</span>Which drawing style?</div>
+        <ol>
+          <li><b>Graphite (Recommended)</b><span>HB pencil on drawing paper, crosshatched, soft colour wash</span></li>
+          <li><b>Charcoal</b><span>Bold, smudgy, dramatic, on grey paper</span></li>
+          <li class="picked"><b>Ink &amp; wash</b><span>Sepia pen lines, then watercolour blooms in</span></li>
+          <li><b>Ballpoint</b><span>Blue pen in a ruled school notebook</span></li>
+        </ol>
+      </div>
+      <div>
+        <p class="file">.inkline/styles/brand.json</p>
+<pre class="json"><code>{
+  <span class="k">"name"</span>: <span class="s">"brand"</span>,
+  <span class="k">"extends"</span>: <span class="s">"fineliner"</span>,
+  <span class="k">"label"</span>: <span class="s">"Brand blue"</span>,
+  <span class="k">"ink"</span>:   { <span class="k">"color"</span>: <span class="s">"#1f4fd8"</span>, <span class="k">"width"</span>: <span class="n">1.8</span> },
+  <span class="k">"paper"</span>: { <span class="k">"color"</span>: <span class="s">"#fffdf7"</span> },
+  <span class="k">"trace"</span>: { <span class="k">"hatch"</span>: <span class="s">"hatch"</span>, <span class="k">"hatchDensity"</span>: <span class="n">0.45</span> },
+  <span class="k">"pen"</span>:   { <span class="k">"tool"</span>: <span class="s">"marker"</span> },
+  <span class="k">"sound"</span>: { <span class="k">"kind"</span>: <span class="s">"marker"</span> }
+}</code></pre>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="band" id="engine">
+  <div class="wrap">
+    <h2>A drawing, rendered like a film.</h2>
+    <p class="intro">The video is an HTML page with a canvas whose every frame is a pure function of time. Headless Chrome seeks it frame by frame; ffmpeg stitches the frames and a synthesised pencil track.</p>
+    <dl class="specs">
+      <div><dt>In</dt><dd>A prompt, a photo (PNG, JPG, WebP, AVIF), an SVG, or a URL.</dd></div>
+      <div><dt>Out</dt><dd>MP4 or WebM in 1080p or any size you set, a poster PNG and an optional GIF. 9:16, 4:5, 1:1 and 16:9.</dd></div>
+      <div><dt>Faces first</dt><dd>On macOS and Windows, Chrome's face detection makes the pencil start at the eyes and draw the face finer.</dd></div>
+      <div><dt>Deterministic</dt><dd>Same input, style and seed give the same frames. Pages render in parallel and are joined losslessly.</dd></div>
+      <div><dt>Sound</dt><dd>Pencil, pen, marker or chalk, synthesised from the speed of every stroke. No audio files.</dd></div>
+      <div><dt>Local</dt><dd>No server, no account, no upload. Node 18 and a Chrome you already have.</dd></div>
+    </dl>
+  </div>
+</section>
+
+<section class="band" id="install">
+  <div class="wrap">
+    <h2>Put it on your wall.</h2>
+    <p class="intro">Pick the way you install skills. On first use inkline sets up its render engine by itself.</p>
+    <div class="installs">
+      <div class="install">
+        <h3>Claude Code plugin</h3>
+        <p>Recommended. Updates with the plugin.</p>
+<pre>/plugin marketplace add SunFloat/inkline
+/plugin install inkline@inkline</pre>
+      </div>
+      <div class="install">
+        <h3>Skills CLI</h3>
+        <p>Works with Claude Code and other agents that read skills.</p>
+<pre>npx skills add SunFloat/inkline</pre>
+      </div>
+      <div class="install">
+        <h3>By hand</h3>
+        <p>Copy the skill folder into your skills directory.</p>
+<pre>git clone https://github.com/SunFloat/inkline
+cp -r inkline/skills/inkline ~/.claude/skills/</pre>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div>
+      <div class="brand"><svg viewBox="0 0 330 140" role="img" aria-label="inkline"><use href="#wm-small"/></svg></div>
+      <p>MIT licensed. Made for Claude Code; runs anywhere Node and Chrome do.</p>
+    </div>
+    <div>
+      <p>Demo artworks: Johannes Vermeer, Vincent van Gogh, Leonardo da Vinci and Albrecht Dürer, all in the public domain, via Wikimedia Commons.</p>
+      <p>Fonts: Permanent Marker, Schibsted Grotesk, JetBrains Mono (SIL Open Font License).</p>
+    </div>
+  </div>
+</footer>
+
+<script src="../skills/inkline/engine/core/materials.js"></script>
+<script src="../skills/inkline/engine/core/trace.js"></script>
+<script src="../skills/inkline/engine/core/sketch.js"></script>
+<script src="../skills/inkline/engine/core/render.js"></script>
+<script src="data/styles.js"></script>
+<script src="data/pearl.js"></script>
+<script>
+(() => {
+  const $ = (s) => document.querySelector(s);
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const STYLES = window.INKLINE_STYLES || {};
+  // full-render stroke plans for the Vermeer, per preset (the live board above shares one trace)
+  const SHELF = [
+    ['graphite', 6253], ['charcoal', 6469], ['sanguine', 7951], ['watercolor', 4144], ['ballpoint', 7398],
+    ['fineliner', 7027], ['whiteboard', 511], ['chalkboard', 4320], ['blueprint', 3260], ['neon', 2809],
+  ];
+  const CHIPS = ['whiteboard', 'graphite', 'charcoal', 'watercolor', 'ballpoint', 'neon'];
+
+  // ---- nav border on scroll
+  const nav = $('#nav');
+  addEventListener('scroll', () => nav.classList.toggle('scrolled', scrollY > 8), { passive: true });
+
+  // ---- copy buttons
+  document.querySelectorAll('[data-copy]').forEach((b) => b.addEventListener('click', async () => {
+    try { await navigator.clipboard.writeText(b.dataset.copy); b.textContent = 'Copied'; b.dataset.done = ''; }
+    catch { b.textContent = 'Select it'; }
+    setTimeout(() => { b.textContent = 'Copy'; delete b.dataset.done; }, 1800);
+  }));
+
+  // ---- the wordmark is written with a chisel nib: copies offset along the nib edge make
+  // strokes broad when they cross it and thin when they run along it; pressure grows as it goes
+  const word = $('#wordmark');
+  const group = word.querySelector('#wm');
+  const base = [...group.querySelectorAll('path')];
+  const NIB = [[0, 0], [0.9, -0.9], [1.8, -1.8], [2.7, -2.7], [3.6, -3.6]];
+  const parts = [];
+  base.forEach((p) => NIB.forEach(([dx, dy], k) => {
+    const q = k ? p.cloneNode() : p;
+    if (k) { q.setAttribute('transform', `translate(${dx} ${dy})`); group.appendChild(q); }
+    parts.push(q);
+  }));
+  const lens = parts.map((p) => p.getTotalLength());
+  const order = base.map((_, i) => i);
+  const total = base.reduce((a, p) => a + p.getTotalLength(), 0);
+  function setWidth(w) { parts.forEach((p) => (p.style.strokeWidth = w)); }
+  function writeWordmark() {
+    if (reduce) { setWidth(2.6); return; }
+    parts.forEach((p, i) => { p.style.strokeDasharray = lens[i]; p.style.strokeDashoffset = lens[i]; });
+    const t0 = performance.now(), dur = 1900;
+    const step = (now) => {
+      const u = Math.min(1, (now - t0) / dur);
+      const e = 1 - Math.pow(1 - u, 2.2);
+      let pos = e * total;
+      order.forEach((bi) => {
+        const L = base[bi].getTotalLength();
+        const done = Math.max(0, Math.min(L, pos));
+        NIB.forEach((_, k) => { const p = parts[bi * NIB.length + k]; p.style.strokeDashoffset = lens[bi * NIB.length + k] - done; });
+        pos -= L;
+      });
+      setWidth((1.4 + 1.4 * e).toFixed(2));
+      if (u < 1) requestAnimationFrame(step);
+    };
+    requestAnimationFrame(step);
+  }
+  writeWordmark();
+
+  // ---- live board
+  const canvas = $('#board');
+  const note = $('#note');
+  const readout = $('#readout');
+  let project = window.INKLINE_DEMO;
+  let current = 'whiteboard';
+  let renderer = null, info = null, raf = 0, token = 0;
+  const small = matchMedia('(max-width: 700px)').matches;
+  const W = small ? 640 : 960, H = Math.round(W * 1.25);
+
+  const fmt = (t) => String(Math.floor(t / 60)).padStart(2, '0') + ':' + (t % 60).toFixed(1).padStart(4, '0');
+
+  async function draw(styleName) {
+    const my = ++token;
+    cancelAnimationFrame(raf);
+    current = styleName;
+    document.querySelectorAll('.chip').forEach((c) => c.setAttribute('aria-pressed', String(c.dataset.style === styleName)));
+    note.hidden = false;
+    note.textContent = 'laying out the paper…';
+    readout.removeAttribute('data-live');
+    await new Promise((r) => setTimeout(r, 30));
+    try {
+      const style = STYLES[styleName] || STYLES.graphite;
+      renderer = Inkline.render.createRenderer(canvas, project, style, { width: W, height: H, fps: 30, duration: small ? 14 : 16, seed: 7 });
+      await renderer.ready;
+      if (my !== token) return;
+      info = renderer.info();
+    } catch (e) {
+      note.textContent = 'This browser could not draw the demo.';
+      return;
+    }
+    note.hidden = true;
+    if (reduce) { renderer.seek(info.duration); paint(info.duration); return; }
+    readout.setAttribute('data-live', '');
+    const t0 = performance.now();
+    const tick = (now) => {
+      if (my !== token) return;
+      const t = Math.min(info.duration, (now - t0) / 1000);
+      renderer.seek(t);
+      paint(t);
+      if (t < info.duration) raf = requestAnimationFrame(tick);
+      else readout.removeAttribute('data-live');
+    };
+    raf = requestAnimationFrame(tick);
+  }
+
+  function paint(t) {
+    $('#tc').textContent = fmt(t);
+    const drawn = Math.round(Math.min(1, t / Math.max(0.01, info.drawEnd)) * info.strokes);
+    $('#sc').textContent = drawn.toLocaleString('en') + ' / ' + info.strokes.toLocaleString('en') + ' strokes · ' + current + ' · live preview';
+  }
+
+  // chips
+  const chips = $('#chips');
+  for (const name of CHIPS) {
+    const b = document.createElement('button');
+    b.type = 'button'; b.className = 'chip'; b.dataset.style = name; b.textContent = (STYLES[name] && STYLES[name].label) || name;
+    b.setAttribute('aria-pressed', 'false');
+    b.addEventListener('click', () => draw(name));
+    chips.appendChild(b);
+  }
+  $('#replay').addEventListener('click', () => draw(current));
+
+  // start drawing when the board is on screen
+  const io = new IntersectionObserver((es) => { if (es.some((e) => e.isIntersecting)) { io.disconnect(); draw('whiteboard'); } }, { threshold: 0.2 });
+  io.observe(canvas);
+
+  // ---- style batches
+  const shelf = $('#batches');
+  SHELF.forEach(([name, strokes], i) => {
+    const s = STYLES[name] || {};
+    const b = document.createElement('button');
+    b.type = 'button'; b.className = 'batch';
+    const col = i % 5, row = Math.floor(i / 5);
+    b.innerHTML = `<div class="swatch" style="background-position:${col * 25}% ${row * 100}%" aria-hidden="true"></div>
+      <div class="label"><strong>${s.label || name}</strong><span>${s.medium || ''}</span><code>full render · ${strokes.toLocaleString('en')} strokes · 0:16</code></div>`;
+    b.setAttribute('aria-label', `${s.label || name}: ${s.medium || ''}. Draw the demo in this style`);
+    b.addEventListener('click', () => {
+      if (!chips.querySelector(`[data-style="${name}"]`)) {
+        const c = document.createElement('button');
+        c.type = 'button'; c.className = 'chip'; c.dataset.style = name; c.textContent = s.label || name;
+        c.addEventListener('click', () => draw(name));
+        chips.appendChild(c);
+      }
+      document.getElementById('top').scrollIntoView({ behavior: reduce ? 'auto' : 'smooth' });
+      draw(name);
+    });
+    shelf.appendChild(b);
+  });
+
+  // ---- example clips play while visible
+  const vio = new IntersectionObserver((es) => es.forEach((e) => {
+    const v = e.target;
+    if (e.isIntersecting && !reduce) { v.preload = 'auto'; v.play().catch(() => {}); } else v.pause();
+  }), { threshold: 0.35 });
+  document.querySelectorAll('.clip video').forEach((v) => vio.observe(v));
+
+  // ---- your photo
+  const drop = $('#drop'), file = $('#file'), err = $('#dropErr');
+  async function usePhoto(f) {
+    err.hidden = true;
+    if (!f || !/^image\//.test(f.type)) { err.textContent = 'That file is not an image.'; err.hidden = false; return; }
+    if (f.size > 25e6) { err.textContent = 'That image is over 25 MB; try a smaller one.'; err.hidden = false; return; }
+    document.getElementById('top').scrollIntoView({ behavior: reduce ? 'auto' : 'smooth' });
+    note.hidden = false; note.textContent = 'reading your photo…';
+    try {
+      const url = URL.createObjectURL(f);
+      project = await Inkline.trace.traceImage(url, STYLES.graphite.trace);
+      URL.revokeObjectURL(url);
+      canvas.setAttribute('aria-label', 'Live drawing of your photo');
+      draw(current);
+    } catch (e) {
+      note.hidden = true;
+      err.textContent = 'This image could not be read. Try a JPG or PNG.'; err.hidden = false;
+    }
+  }
+  file.addEventListener('change', () => usePhoto(file.files[0]));
+  drop.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); file.click(); } });
+  ['dragenter', 'dragover'].forEach((ev) => drop.addEventListener(ev, (e) => { e.preventDefault(); drop.classList.add('over'); }));
+  ['dragleave', 'drop'].forEach((ev) => drop.addEventListener(ev, (e) => { e.preventDefault(); drop.classList.remove('over'); }));
+  drop.addEventListener('drop', (e) => usePhoto(e.dataTransfer.files[0]));
+})();
+</script>
+</body>
+</html>

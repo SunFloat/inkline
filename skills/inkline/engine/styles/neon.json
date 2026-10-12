@@ -1,0 +1,51 @@
+{
+  "$schema": "../style.schema.json",
+  "name": "neon",
+  "label": "Neon",
+  "medium": "light-painting on black",
+  "paper": {
+    "texture": "black",
+    "color": "#0b0b10"
+  },
+  "ink": {
+    "color": "#39f3ff",
+    "width": 2.2,
+    "opacity": 1,
+    "taper": 0.3,
+    "grain": 0,
+    "jitter": 0.25,
+    "glow": 6,
+    "glowColor": "#00c8ff",
+    "blend": "screen"
+  },
+  "layers": {
+    "shade": {
+      "width": 0.6,
+      "opacity": 0.55,
+      "speed": 0.5,
+      "color": "#ff3cac"
+    }
+  },
+  "trace": {
+    "detail": 0.55,
+    "hatch": "hatch",
+    "hatchDensity": 0.35,
+    "levels": 2,
+    "invert": true
+  },
+  "pen": {
+    "tool": "glow"
+  },
+  "color": {
+    "reveal": "none"
+  },
+  "sound": {
+    "kind": "pen",
+    "volume": 0.5
+  },
+  "sketch": {
+    "invert": true,
+    "lines": 0.9,
+    "tone": 0.75
+  }
+}

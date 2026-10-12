@@ -1,0 +1,45 @@
+{
+  "$schema": "../style.schema.json",
+  "name": "sanguine",
+  "label": "Sanguine",
+  "medium": "red chalk on aged laid paper, Renaissance study",
+  "paper": {
+    "texture": "aged",
+    "color": "#e9d7b2",
+    "vignette": 0.4
+  },
+  "ink": {
+    "color": "#8b3a24",
+    "width": 2.4,
+    "opacity": 0.85,
+    "taper": 0.5,
+    "grain": 0.6,
+    "jitter": 0.5,
+    "blend": "multiply"
+  },
+  "layers": {
+    "shade": {
+      "width": 0.6,
+      "opacity": 0.55,
+      "speed": 0.5
+    }
+  },
+  "trace": {
+    "detail": 0.55,
+    "hatch": "hatch",
+    "hatchDensity": 0.6,
+    "levels": 3
+  },
+  "pen": {
+    "tool": "chalk",
+    "color": "#9b4a2e",
+    "scale": 0.85
+  },
+  "color": {
+    "reveal": "none"
+  },
+  "sound": {
+    "kind": "chalk",
+    "volume": 0.6
+  }
+}

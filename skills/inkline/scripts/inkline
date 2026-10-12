@@ -1,0 +1,22 @@
+#!/usr/bin/env sh
+# inkline launcher: installs the engine's dependencies on first use, then runs the CLI.
+set -e
+DIR="$(cd "$(dirname "$0")/.." && pwd)"
+ENGINE="$DIR/engine"
+
+if ! command -v node >/dev/null 2>&1; then
+  echo "inkline · error: Node.js 18+ is required. Install the LTS from https://nodejs.org and retry." >&2
+  exit 1
+fi
+MAJOR="$(node -p 'process.versions.node.split(".")[0]')"
+if [ "$MAJOR" -lt 18 ]; then
+  echo "inkline · error: Node.js $MAJOR found; inkline needs 18 or newer." >&2
+  exit 1
+fi
+
+if [ ! -d "$ENGINE/node_modules/puppeteer-core" ] || [ ! -d "$ENGINE/node_modules/ffmpeg-static" ]; then
+  echo "inkline · one-time setup: installing the render engine (about a minute) …" >&2
+  (cd "$ENGINE" && npm install --omit=dev --no-audit --no-fund --loglevel=error >&2)
+fi
+
+exec node "$ENGINE/bin/inkline.js" "$@"

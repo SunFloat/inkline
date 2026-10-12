@@ -1,0 +1,47 @@
+{
+  "$schema": "../style.schema.json",
+  "name": "chalkboard",
+  "label": "Chalkboard",
+  "medium": "white chalk on a worn slate board",
+  "paper": {
+    "texture": "chalkboard",
+    "color": "#26342d"
+  },
+  "ink": {
+    "color": "#f1f0e8",
+    "width": 3.2,
+    "opacity": 0.9,
+    "taper": 0.25,
+    "grain": 0.7,
+    "jitter": 0.6,
+    "blend": "source-over"
+  },
+  "layers": {
+    "shade": {
+      "width": 0.8,
+      "opacity": 0.42,
+      "speed": 0.5
+    }
+  },
+  "trace": {
+    "detail": 0.5,
+    "hatch": "hatch",
+    "hatchDensity": 0.45,
+    "levels": 3,
+    "invert": true
+  },
+  "pen": {
+    "tool": "chalk",
+    "color": "#f4f2ea",
+    "scale": 0.8
+  },
+  "color": {
+    "reveal": "none"
+  },
+  "sound": {
+    "kind": "chalk"
+  },
+  "sketch": {
+    "invert": true
+  }
+}

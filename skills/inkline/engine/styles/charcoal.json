@@ -1,0 +1,50 @@
+{
+  "$schema": "../style.schema.json",
+  "name": "charcoal",
+  "label": "Charcoal",
+  "medium": "willow charcoal on grey Ingres paper",
+  "paper": {
+    "texture": "paper",
+    "color": "#d9d4ca",
+    "grain": 0.55,
+    "vignette": 0.18
+  },
+  "ink": {
+    "color": "#1b1a19",
+    "width": 4.2,
+    "opacity": 0.72,
+    "taper": 0.4,
+    "grain": 0.78,
+    "jitter": 0.8,
+    "smudge": 0.35,
+    "blend": "multiply"
+  },
+  "layers": {
+    "detail": {
+      "width": 0.6
+    },
+    "shade": {
+      "width": 0.8,
+      "opacity": 0.45,
+      "speed": 0.45
+    }
+  },
+  "trace": {
+    "detail": 0.45,
+    "hatch": "hatch",
+    "hatchDensity": 0.45,
+    "levels": 3
+  },
+  "pen": {
+    "tool": "chalk",
+    "color": "#232120",
+    "scale": 0.9
+  },
+  "color": {
+    "reveal": "none"
+  },
+  "sound": {
+    "kind": "chalk",
+    "volume": 0.7
+  }
+}

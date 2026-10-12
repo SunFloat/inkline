@@ -1,0 +1,50 @@
+{
+  "$schema": "../style.schema.json",
+  "name": "fineliner",
+  "label": "Fineliner",
+  "medium": "0.3 mm archival ink on bright bristol",
+  "paper": {
+    "texture": "paper",
+    "color": "#fbfaf7",
+    "grain": 0.2,
+    "vignette": 0.05
+  },
+  "ink": {
+    "color": "#141414",
+    "width": 1.5,
+    "opacity": 1,
+    "taper": 0.15,
+    "grain": 0,
+    "jitter": 0.35,
+    "blend": "multiply",
+    "mode": "strokes"
+  },
+  "layers": {
+    "detail": {
+      "width": 0.8
+    },
+    "shade": {
+      "width": 0.55,
+      "opacity": 0.8,
+      "speed": 0.5
+    }
+  },
+  "trace": {
+    "detail": 0.65,
+    "hatch": "crosshatch",
+    "hatchDensity": 0.6,
+    "levels": 4,
+    "background": "none"
+  },
+  "pen": {
+    "tool": "fineliner"
+  },
+  "color": {
+    "reveal": "wash",
+    "inkAfter": 1,
+    "strength": 0.6
+  },
+  "sound": {
+    "kind": "pen"
+  }
+}

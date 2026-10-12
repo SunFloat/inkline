@@ -1,0 +1,278 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>__TITLE__ · inkline preview</title>
+<style>
+  @font-face { font-family: "Marker"; src: url("__ASSETS__/fonts/permanent-marker-400.woff2") format("woff2"); font-display: swap; }
+  @font-face { font-family: "Grotesk"; src: url("__ASSETS__/fonts/schibsted-grotesk-400-800.woff2") format("woff2"); font-weight: 400 800; font-display: swap; }
+  @font-face { font-family: "Mono"; src: url("__ASSETS__/fonts/jetbrains-mono-400-600.woff2") format("woff2"); font-weight: 400 600; font-display: swap; }
+
+  :root {
+    --wall: #f6f7f4;
+    --ghost: #d8dbd7;
+    --marker: #141414;
+    --blue: #1f4fd8;
+    --red: #e0322b;
+    --tray: #e3e5e1;
+    --tray-edge: #b9bdb7;
+    --muted: #4a504c;
+    --stroke: 2px;
+    --radius: 8px;
+    --tray-h: 88px;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; }
+  body {
+    background: var(--wall);
+    color: var(--marker);
+    font: 400 15px/1.45 "Grotesk", system-ui, sans-serif;
+    display: grid;
+    grid-template-rows: auto minmax(0, 1fr) var(--tray-h);
+    overflow: hidden;
+  }
+  ::selection { background: var(--blue); color: var(--wall); }
+  :focus-visible { outline: var(--stroke) solid var(--blue); outline-offset: 3px; }
+  button { font: inherit; color: inherit; }
+
+  header {
+    display: flex; align-items: baseline; gap: 14px;
+    padding: 14px 20px 6px;
+  }
+  .mark { font-family: "Marker", "Grotesk", sans-serif; font-size: 26px; line-height: 1; letter-spacing: 0.01em; }
+  .file { color: var(--muted); font-size: 14px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+  main { display: grid; place-items: center; min-height: 0; overflow: hidden; padding: 8px 20px 18px; position: relative; }
+  .frame { position: relative; display: grid; place-items: center; }
+  canvas {
+    display: block;
+    border: var(--stroke) solid var(--marker);
+    border-radius: 3px;
+    background: #fff;
+  }
+  .status {
+    position: absolute; inset: 0; display: grid; place-items: center;
+    font-family: "Marker", sans-serif; font-size: 22px; color: var(--muted);
+    pointer-events: none;
+  }
+  .status[hidden] { display: none; }
+  .status.error { color: var(--marker); text-decoration: underline wavy var(--blue); text-underline-offset: 6px; font-family: "Grotesk", sans-serif; font-size: 16px; padding: 24px; text-align: center; }
+
+  /* the aluminium marker tray: the only chrome on the wall */
+  .tray {
+    display: grid;
+    grid-template-columns: auto minmax(160px, 1fr) auto auto auto;
+    align-items: center; gap: 22px;
+    padding: 0 20px;
+    background: var(--tray);
+    border-top: 1px solid var(--tray-edge);
+  }
+  .play {
+    width: 48px; height: 48px; border-radius: 50%;
+    border: var(--stroke) solid var(--marker); background: transparent;
+    display: grid; place-items: center; cursor: pointer;
+    transition: background-color .15s ease-out, color .15s ease-out;
+  }
+  .play:hover { background: var(--marker); color: var(--wall); }
+  .play svg { width: 18px; height: 18px; }
+  .play[aria-pressed="true"] .i-play, .play[aria-pressed="false"] .i-pause { display: none; }
+
+  .scrub { position: relative; height: 40px; display: flex; align-items: center; cursor: pointer; touch-action: none; }
+  .scrub .track { position: absolute; left: 0; right: 0; height: 2px; background: var(--marker); border-radius: 2px; }
+  .scrub .done { position: absolute; left: 0; height: 5px; background: var(--blue); border-radius: 3px; width: 0; }
+  .scrub .mark-reveal { position: absolute; top: 8px; bottom: 8px; width: 2px; background: var(--ghost); }
+  .scrub .knob {
+    position: absolute; width: 18px; height: 18px; margin-left: -9px; border-radius: 50%;
+    background: var(--blue); border: var(--stroke) solid var(--marker); left: 0;
+  }
+
+  /* timecode instrument: fixed position, fixed width, tabular */
+  .timecode {
+    font-family: "Mono", ui-monospace, monospace; font-variant-numeric: tabular-nums;
+    border: var(--stroke) solid var(--marker); border-radius: var(--radius);
+    padding: 6px 12px; background: var(--wall); min-width: 13.5ch;
+    display: grid; line-height: 1.15;
+  }
+  .timecode b { font-weight: 600; font-size: 19px; }
+  .timecode span { font-size: 12px; color: var(--muted); }
+
+  .batch {
+    border: var(--stroke) solid var(--marker); border-radius: var(--radius);
+    padding: 6px 12px; background: var(--wall);
+    display: grid; line-height: 1.2; max-width: 260px;
+  }
+  .batch strong { font-family: "Marker", sans-serif; font-weight: 400; font-size: 16px; }
+  .batch span { font-size: 12px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+  .render {
+    display: inline-flex; align-items: center; gap: 10px; cursor: pointer;
+    border: var(--stroke) solid var(--marker); border-radius: 999px; background: var(--wall);
+    padding: 10px 16px; font-weight: 600;
+    transition: background-color .15s ease-out, color .15s ease-out;
+  }
+  .render::before { content: ""; width: 12px; height: 12px; border-radius: 50%; background: var(--red); flex: none; }
+  .render:hover { background: var(--marker); color: var(--wall); }
+  .render[data-state="copied"] { background: var(--red); color: #fff; border-color: var(--red); }
+  .render[data-state="copied"]::before { background: #fff; }
+
+  @media (max-width: 860px) {
+    :root { --tray-h: auto; }
+    .tray { grid-template-columns: auto 1fr; grid-auto-rows: auto; padding: 12px 16px; gap: 12px 16px; }
+    .scrub { grid-column: 2; }
+    .timecode, .batch { grid-column: span 1; }
+    .render { grid-column: 1 / -1; justify-content: center; }
+    header { padding: 12px 16px 4px; }
+    main { padding: 8px 16px 12px; }
+  }
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+</head>
+<body>
+<header>
+  <span class="mark" aria-label="inkline">inkline</span>
+  <span class="file">__TITLE__</span>
+</header>
+<main>
+  <div class="frame">
+    <canvas id="stage" aria-label="Drawing preview"></canvas>
+    <div class="status" id="status">laying out the paper…</div>
+  </div>
+</main>
+<section class="tray" aria-label="Playback">
+  <button class="play" id="play" aria-pressed="false" aria-label="Play">
+    <svg class="i-play" viewBox="0 0 20 20" aria-hidden="true"><path d="M5 3.5 L16.5 10 L5 16.5 Z" fill="currentColor"/></svg>
+    <svg class="i-pause" viewBox="0 0 20 20" aria-hidden="true"><path d="M5 3h3.6v14H5zM11.4 3H15v14h-3.6z" fill="currentColor"/></svg>
+  </button>
+  <div class="scrub" id="scrub" role="slider" tabindex="0" aria-label="Time" aria-valuemin="0" aria-valuemax="0" aria-valuenow="0">
+    <div class="track"></div>
+    <div class="mark-reveal" id="revealMark" hidden></div>
+    <div class="done" id="done"></div>
+    <div class="knob" id="knob"></div>
+  </div>
+  <div class="timecode" aria-live="off"><b id="tc">00:00.00</b><span id="tf">frame 0 / 0</span></div>
+  <div class="batch"><strong id="bName">style</strong><span id="bMeta"></span></div>
+  <button class="render" id="render" title="Copies the command that renders this exact video">Copy render command</button>
+</section>
+
+<script src="__CORE__/materials.js"></script>
+<script src="__CORE__/trace.js"></script>
+<script src="__CORE__/sketch.js"></script>
+<script src="__CORE__/render.js"></script>
+<script>
+  const DATA = /*__INKLINE_DATA__*/null;
+  const $ = (id) => document.getElementById(id);
+  const fmt = (t) => {
+    const m = Math.floor(t / 60), s = t - m * 60;
+    return String(m).padStart(2, '0') + ':' + s.toFixed(2).padStart(5, '0');
+  };
+  let renderer, info, t = 0, playing = false, last = 0;
+
+  async function boot() {
+    try {
+      renderer = Inkline.render.createRenderer($('stage'), DATA.project, DATA.style, DATA.opts);
+      await renderer.ready;
+      info = renderer.info();
+      $('scrub').setAttribute('aria-valuemax', info.duration.toFixed(2));
+      $('bName').textContent = DATA.style.label || DATA.style.name;
+      $('bMeta').textContent = [DATA.style.medium, info.strokes.toLocaleString('en') + ' strokes', info.duration.toFixed(1) + ' s', info.width + '×' + info.height].filter(Boolean).join(' · ');
+      if (info.revealStart) {
+        $('revealMark').hidden = false;
+        $('revealMark').style.left = (info.revealStart / info.duration * 100) + '%';
+        $('revealMark').title = 'colour wash';
+      }
+      $('status').hidden = true;
+      fit();
+      draw(0);
+      play(true);
+    } catch (e) {
+      $('status').textContent = 'The preview could not start: ' + e.message + '. Rendering with the CLI still works.';
+      $('status').classList.add('error');
+    }
+  }
+
+  // fit the stage into whatever the wall leaves free, keeping the video's aspect
+  function fit() {
+    if (!info) return;
+    const box = document.querySelector('main').getBoundingClientRect();
+    const cs = getComputedStyle(document.querySelector('main'));
+    const aw = box.width - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight) - 4;
+    const ah = box.height - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom) - 4;
+    const k = Math.min(aw / info.width, ah / info.height);
+    $('stage').style.width = Math.floor(info.width * k) + 'px';
+    $('stage').style.height = Math.floor(info.height * k) + 'px';
+  }
+  addEventListener('resize', fit);
+
+  function draw(time) {
+    t = Math.max(0, Math.min(info.duration, time));
+    renderer.seek(t);
+    const p = t / info.duration * 100;
+    $('done').style.width = p + '%';
+    $('knob').style.left = p + '%';
+    $('tc').textContent = fmt(t);
+    $('tf').textContent = 'frame ' + Math.round(t * info.fps) + ' / ' + info.frames;
+    $('scrub').setAttribute('aria-valuenow', t.toFixed(2));
+    $('scrub').setAttribute('aria-valuetext', fmt(t));
+  }
+
+  function play(on) {
+    if (on && t >= info.duration - 0.01) draw(0);
+    playing = on;
+    $('play').setAttribute('aria-pressed', String(on));
+    $('play').setAttribute('aria-label', on ? 'Pause' : 'Play');
+    last = performance.now();
+    if (on) requestAnimationFrame(tick);
+  }
+
+  function tick(now) {
+    if (!playing) return;
+    const dt = Math.min(0.1, (now - last) / 1000);
+    last = now;
+    draw(t + dt);
+    if (t >= info.duration) return play(false);
+    requestAnimationFrame(tick);
+  }
+
+  $('play').addEventListener('click', () => info && play(!playing));
+
+  const scrub = $('scrub');
+  const seekFromEvent = (e) => {
+    const r = scrub.getBoundingClientRect();
+    draw((e.clientX - r.left) / r.width * info.duration);
+  };
+  scrub.addEventListener('pointerdown', (e) => {
+    if (!info) return;
+    play(false);
+    scrub.setPointerCapture(e.pointerId);
+    seekFromEvent(e);
+    scrub.onpointermove = seekFromEvent;
+  });
+  scrub.addEventListener('pointerup', () => (scrub.onpointermove = null));
+
+  document.addEventListener('keydown', (e) => {
+    if (!info) return;
+    const step = e.shiftKey ? 1 : 1 / info.fps;
+    if (e.key === ' ' && e.target.tagName !== 'BUTTON') { e.preventDefault(); play(!playing); }
+    else if (e.key === 'ArrowRight') { play(false); draw(t + step); }
+    else if (e.key === 'ArrowLeft') { play(false); draw(t - step); }
+    else if (e.key === 'Home') { play(false); draw(0); }
+    else if (e.key === 'End') { play(false); draw(info.duration); }
+  });
+
+  $('render').addEventListener('click', async () => {
+    const btn = $('render');
+    try {
+      await navigator.clipboard.writeText(DATA.command);
+      btn.dataset.state = 'copied';
+      btn.textContent = 'Copied: paste it in your terminal';
+    } catch {
+      btn.textContent = DATA.command;
+    }
+    setTimeout(() => { btn.dataset.state = ''; btn.textContent = 'Copy render command'; }, 2600);
+  });
+
+  boot();
+</script>
+</body>
+</html>

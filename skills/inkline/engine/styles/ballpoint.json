@@ -1,0 +1,41 @@
+{
+  "$schema": "../style.schema.json",
+  "name": "ballpoint",
+  "label": "Ballpoint",
+  "medium": "blue ballpoint in a ruled school notebook",
+  "paper": {
+    "texture": "notebook",
+    "color": "#fbfaf6"
+  },
+  "ink": {
+    "color": "#1d3a8a",
+    "width": 1.4,
+    "opacity": 0.85,
+    "taper": 0.35,
+    "grain": 0.12,
+    "jitter": 0.55,
+    "blend": "multiply"
+  },
+  "layers": {
+    "shade": {
+      "width": 0.7,
+      "opacity": 0.45,
+      "speed": 0.55
+    }
+  },
+  "trace": {
+    "detail": 0.6,
+    "hatch": "crosshatch",
+    "hatchDensity": 0.65,
+    "levels": 4
+  },
+  "pen": {
+    "tool": "ballpoint"
+  },
+  "color": {
+    "reveal": "none"
+  },
+  "sound": {
+    "kind": "pen"
+  }
+}

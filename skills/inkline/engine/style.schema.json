@@ -1,0 +1,516 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/SunFloat/inkline/skills/inkline/engine/style.schema.json",
+  "title": "inkline style",
+  "type": "object",
+  "properties": {
+    "$schema": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string",
+      "pattern": "^[a-zA-Z0-9][a-zA-Z0-9-_]{0,40}$"
+    },
+    "extends": {
+      "type": "string",
+      "description": "preset or style this one builds on"
+    },
+    "label": {
+      "type": "string"
+    },
+    "medium": {
+      "type": "string"
+    },
+    "paper": {
+      "type": "object",
+      "properties": {
+        "texture": {
+          "enum": [
+            "paper",
+            "whiteboard",
+            "chalkboard",
+            "blueprint",
+            "notebook",
+            "black",
+            "aged",
+            "kraft",
+            "none"
+          ],
+          "description": "procedural ground"
+        },
+        "color": {
+          "type": "string",
+          "pattern": "^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$",
+          "description": "ground colour"
+        },
+        "grain": {
+          "type": "number",
+          "description": "paper tooth",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "vignette": {
+          "type": "number",
+          "description": "edge darkening",
+          "minimum": 0,
+          "maximum": 1
+        }
+      }
+    },
+    "ink": {
+      "type": "object",
+      "properties": {
+        "color": {
+          "type": "string",
+          "pattern": "^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$",
+          "description": "line colour"
+        },
+        "width": {
+          "type": "number",
+          "description": "base width in px at 1080p",
+          "minimum": 0.1
+        },
+        "opacity": {
+          "type": "number",
+          "description": "",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "taper": {
+          "type": "number",
+          "description": "thinning at stroke ends",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "grain": {
+          "type": "number",
+          "description": "broken-up texture",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "jitter": {
+          "type": "number",
+          "description": "hand wobble",
+          "minimum": 0
+        },
+        "glow": {
+          "type": "number",
+          "description": "bloom radius",
+          "minimum": 0,
+          "maximum": 20
+        },
+        "glowColor": {
+          "type": "string",
+          "pattern": "^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$",
+          "description": "bloom colour"
+        },
+        "blend": {
+          "enum": [
+            "multiply",
+            "source-over",
+            "screen",
+            "darken",
+            "lighten"
+          ],
+          "description": "how ink sits on the ground"
+        },
+        "smudge": {
+          "type": "number",
+          "description": "charcoal halo",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "mode": {
+          "enum": [
+            "auto",
+            "reveal",
+            "strokes"
+          ],
+          "description": "reveal for photos, strokes for vector lines"
+        },
+        "svgWidth": {
+          "type": "number",
+          "description": "multiplier for SVG stroke widths",
+          "minimum": 0
+        }
+      }
+    },
+    "layers": {
+      "type": "object",
+      "properties": {
+        "contour": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "width": {
+              "type": "number",
+              "description": "width multiplier",
+              "minimum": 0
+            },
+            "opacity": {
+              "type": "number",
+              "description": "opacity multiplier",
+              "minimum": 0
+            },
+            "speed": {
+              "type": "number",
+              "description": "relative drawing speed",
+              "minimum": 0.05
+            },
+            "color": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "pattern": "^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$",
+                  "description": "layer colour"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          }
+        },
+        "detail": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "width": {
+              "type": "number",
+              "description": "width multiplier",
+              "minimum": 0
+            },
+            "opacity": {
+              "type": "number",
+              "description": "opacity multiplier",
+              "minimum": 0
+            },
+            "speed": {
+              "type": "number",
+              "description": "relative drawing speed",
+              "minimum": 0.05
+            },
+            "color": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "pattern": "^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$",
+                  "description": "layer colour"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          }
+        },
+        "shade": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "width": {
+              "type": "number",
+              "description": "width multiplier",
+              "minimum": 0
+            },
+            "opacity": {
+              "type": "number",
+              "description": "opacity multiplier",
+              "minimum": 0
+            },
+            "speed": {
+              "type": "number",
+              "description": "relative drawing speed",
+              "minimum": 0.05
+            },
+            "color": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "pattern": "^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$",
+                  "description": "layer colour"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          }
+        }
+      }
+    },
+    "trace": {
+      "type": "object",
+      "properties": {
+        "detail": {
+          "type": "number",
+          "description": "",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "hatch": {
+          "enum": [
+            "none",
+            "hatch",
+            "crosshatch",
+            "zigzag",
+            "scribble"
+          ],
+          "description": ""
+        },
+        "hatchDensity": {
+          "type": "number",
+          "description": "",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "hatchAngle": {
+          "anyOf": [
+            {
+              "const": "flow"
+            },
+            {
+              "type": "number"
+            }
+          ]
+        },
+        "levels": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 4
+        },
+        "background": {
+          "enum": [
+            "light",
+            "none",
+            "full"
+          ],
+          "description": ""
+        },
+        "vignette": {
+          "type": "number",
+          "description": "",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "invert": {
+          "type": "boolean"
+        },
+        "maxSide": {
+          "type": "integer",
+          "minimum": 200,
+          "maximum": 2400
+        },
+        "contrast": {
+          "type": "number",
+          "description": "gamma",
+          "minimum": 0.2,
+          "maximum": 3
+        },
+        "seed": {
+          "type": "integer"
+        }
+      }
+    },
+    "sketch": {
+      "type": "object",
+      "properties": {
+        "lines": {
+          "type": "number",
+          "description": "",
+          "minimum": 0,
+          "maximum": 2
+        },
+        "tone": {
+          "type": "number",
+          "description": "",
+          "minimum": 0,
+          "maximum": 2
+        },
+        "angle": {
+          "type": "number",
+          "description": "degrees"
+        },
+        "hatchScale": {
+          "type": "number",
+          "description": "",
+          "minimum": 0.2,
+          "maximum": 5
+        },
+        "vignette": {
+          "type": "number",
+          "description": "",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "invert": {
+          "type": "boolean"
+        },
+        "presmooth": {
+          "type": "number",
+          "description": "",
+          "minimum": 0,
+          "maximum": 5
+        },
+        "band": {
+          "type": "number",
+          "description": "",
+          "minimum": 0.2,
+          "maximum": 5
+        },
+        "strokeLines": {
+          "type": "number",
+          "description": "",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "lineSoftness": {
+          "type": "number",
+          "description": "",
+          "minimum": 0.2,
+          "maximum": 5
+        }
+      }
+    },
+    "pen": {
+      "type": "object",
+      "properties": {
+        "tool": {
+          "enum": [
+            "pencil",
+            "fineliner",
+            "ballpoint",
+            "marker",
+            "chalk",
+            "brush",
+            "glow",
+            "none"
+          ],
+          "description": ""
+        },
+        "color": {
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$",
+              "description": ""
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "scale": {
+          "type": "number",
+          "description": "",
+          "minimum": 0.2,
+          "maximum": 3
+        },
+        "angle": {
+          "type": "number",
+          "description": "degrees"
+        }
+      }
+    },
+    "color": {
+      "type": "object",
+      "properties": {
+        "reveal": {
+          "enum": [
+            "wash",
+            "fade",
+            "none"
+          ],
+          "description": ""
+        },
+        "duration": {
+          "type": "number",
+          "description": "seconds",
+          "minimum": 0
+        },
+        "strength": {
+          "type": "number",
+          "description": "",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "opacity": {
+          "type": "number",
+          "description": "",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "saturation": {
+          "type": "number",
+          "description": "",
+          "minimum": 0,
+          "maximum": 3
+        },
+        "inkAfter": {
+          "type": "number",
+          "description": "",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "blend": {
+          "type": "string"
+        }
+      }
+    },
+    "camera": {
+      "type": "object",
+      "properties": {
+        "mode": {
+          "enum": [
+            "follow",
+            "push",
+            "none"
+          ],
+          "description": ""
+        },
+        "zoom": {
+          "type": "number",
+          "description": "",
+          "minimum": 1,
+          "maximum": 2
+        }
+      }
+    },
+    "timing": {
+      "type": "object",
+      "properties": {
+        "intro": {
+          "type": "number",
+          "description": "seconds",
+          "minimum": 0
+        },
+        "outro": {
+          "type": "number",
+          "description": "seconds",
+          "minimum": 0
+        }
+      }
+    },
+    "sound": {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "enum": [
+            "pencil",
+            "pen",
+            "marker",
+            "chalk",
+            "none"
+          ],
+          "description": ""
+        },
+        "volume": {
+          "type": "number",
+          "description": "",
+          "minimum": 0,
+          "maximum": 1
+        }
+      }
+    }
+  }
+}

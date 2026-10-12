@@ -1,0 +1,46 @@
+{
+  "$schema": "../style.schema.json",
+  "name": "blueprint",
+  "label": "Blueprint",
+  "medium": "technical pen on cyanotype",
+  "paper": {
+    "texture": "blueprint",
+    "color": "#1c4f8f"
+  },
+  "ink": {
+    "color": "#eaf3ff",
+    "width": 1.6,
+    "opacity": 0.92,
+    "taper": 0.1,
+    "grain": 0.1,
+    "jitter": 0.15,
+    "blend": "source-over"
+  },
+  "layers": {
+    "shade": {
+      "width": 0.5,
+      "opacity": 0.5,
+      "speed": 0.5
+    }
+  },
+  "trace": {
+    "detail": 0.6,
+    "hatch": "hatch",
+    "hatchDensity": 0.5,
+    "levels": 2,
+    "invert": true
+  },
+  "pen": {
+    "tool": "fineliner",
+    "color": "#eaf3ff"
+  },
+  "color": {
+    "reveal": "none"
+  },
+  "sound": {
+    "kind": "pen"
+  },
+  "sketch": {
+    "invert": true
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "name": "inkline",
+  "owner": { "name": "Benjamin Buchta" },
+  "plugins": [
+    {
+      "name": "inkline",
+      "source": "./",
+      "description": "Prompt, photo or SVG in, hand-drawn video out. Local rendering, eleven styles, custom styles as JSON.",
+      "version": "1.0.0",
+      "license": "MIT"
+    }
+  ]
+}

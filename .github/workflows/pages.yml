@@ -1,0 +1,28 @@
+name: pages
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}site/
+    steps:
+      - uses: actions/checkout@v4
+      # the page loads the engine from ../skills, so the whole tree is published; / redirects to /site/
+      - run: |
+          mkdir -p _pages
+          cp -r site skills _pages/
+          rm -rf _pages/skills/inkline/engine/node_modules
+          printf '<!doctype html><meta http-equiv="refresh" content="0; url=site/"><link rel="canonical" href="site/">' > _pages/index.html
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _pages
+      - id: deployment
+        uses: actions/deploy-pages@v4

@@ -1,0 +1,49 @@
+{
+  "$schema": "../style.schema.json",
+  "name": "watercolor",
+  "label": "Ink & wash",
+  "medium": "sepia fineliner, then a watercolour wash",
+  "paper": {
+    "texture": "paper",
+    "color": "#f7f3ea",
+    "grain": 0.4,
+    "vignette": 0.1
+  },
+  "ink": {
+    "color": "#3b2f2a",
+    "width": 1.6,
+    "opacity": 0.95,
+    "taper": 0.3,
+    "grain": 0.1,
+    "jitter": 0.4,
+    "blend": "multiply"
+  },
+  "layers": {
+    "shade": {
+      "width": 0.5,
+      "opacity": 0.4,
+      "speed": 0.5
+    }
+  },
+  "trace": {
+    "detail": 0.55,
+    "hatch": "hatch",
+    "hatchDensity": 0.3,
+    "levels": 2
+  },
+  "pen": {
+    "tool": "fineliner",
+    "color": "#3b2f2a"
+  },
+  "color": {
+    "reveal": "wash",
+    "duration": 3.4,
+    "opacity": 1,
+    "saturation": 1.15,
+    "inkAfter": 0.9,
+    "strength": 0.9
+  },
+  "sound": {
+    "kind": "pen"
+  }
+}

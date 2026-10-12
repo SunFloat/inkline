@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>inkline composition</title>
+<style>html,body{margin:0;background:#000}canvas{display:block}</style>
+</head>
+<body>
+<canvas id="stage"></canvas>
+<script src="materials.js"></script>
+<script src="trace.js"></script>
+<script src="sketch.js"></script>
+<script src="render.js"></script>
+<script>
+  // Automation surface used by the CLI. Frames are a pure function of (project, style, opts, t).
+  window.__inkline = {
+    renderer: null,
+    async trace(input) {
+      if (input.kind === 'svg') return Inkline.trace.traceSVG(input.text, input.options);
+      return Inkline.trace.traceImage(input.src, input.options);
+    },
+    async load(project, style, opts) {
+      this.renderer = Inkline.render.createRenderer(document.getElementById('stage'), project, style, opts);
+      await this.renderer.ready;
+      return this.renderer.info();
+    },
+    frame(t, type, quality) {
+      this.renderer.seek(t);
+      return document.getElementById('stage').toDataURL(type || 'image/png', quality);
+    },
+    penTrack(rate) {
+      return this.renderer.penTrack(rate);
+    },
+  };
+</script>
+</body>
+</html>
