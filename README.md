@@ -161,7 +161,7 @@ All commands and flags: [`references/cli.md`](skills/inkline/references/cli.md).
 skills/inkline/
   SKILL.md                 the skill: workflow, defaults, quality checks
   references/              question rounds, styles, SVG authoring, CLI
-  scripts/inkline          launcher (sets up the engine on first run)
+  scripts/inkline          launcher (doctor, setup, render …; installs nothing unasked)
   engine/
     core/                  trace, sketch, materials, renderer, player (browser JS)
     src/                   CLI: pipeline, browser, ffmpeg, styles, audio
